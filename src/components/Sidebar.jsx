@@ -11,11 +11,13 @@ function Sidebar() {
   ];
 
   return (
-    <aside className="w-64 h-screen bg-gray-100 p-4">
-      <ul className="space-y-2">
+    <aside className="sidebar">
+      <ul className="menu list">
         {links.map((link) => (
-          <li key={link.path}>
-            <Link to={link.path}>{link.label}</Link>
+          <li key={link.path} className="menu-item">
+            <Link to={link.path} className="menu-link">
+              {link.label}
+            </Link>
           </li>
         ))}
       </ul>

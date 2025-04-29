@@ -1,42 +1,46 @@
+// ThemeContext.jsx
+// This file contains the ThemeContext and ThemeProvider component
+// which provides theme management for the application.
+// It allows toggling between light and dark themes.
+// It uses React's Context API to provide theme-related state and functions
+// to the entire application.
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 // Create ThemeContext
-const ThemeContext = createContext();
+const ThemeContext = createContext({
+    theme: 'light', // Default theme
+    toggleTheme: () => {}, // Function to toggle theme
+});
 
 // ThemeProvider component
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(() => {
-        // Load theme from localStorage or default to 'light'
-        return localStorage.getItem('theme') || 'light';
+try {
+        const storedTheme = localStorage.getItem('theme');
+        return storedTheme === 'dark' ? 'dark' : 'light';
+} catch {
+            return 'light';
+        }
     });
 
-    const [accentColor, setAccentColor] = useState(() => {
-        // Load accent color from localStorage or default to '#007bff' (blue)
-        return localStorage.getItem('accentColor') || '#007bff';
-    });
-
-    // Update localStorage whenever theme or accentColor changes
+    // Update localStorage whenever theme changes
     useEffect(() => {
+try {
         localStorage.setItem('theme', theme);
+} catch {
+            console.error('Failed to save theme to localStorage');
+        }
     }, [theme]);
-
-    useEffect(() => {
-        localStorage.setItem('accentColor', accentColor);
-    }, [accentColor]);
 
     // Toggle between light and dark mode
     const toggleTheme = () => {
         setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
     };
 
-    // Update accent color
-    const updateAccentColor = (color) => {
-        setAccentColor(color);
-    };
-
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, updateAccentColor }}>
-            <div className={theme} style={{ '--accent-color': accentColor }}>
+        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+            <div className={theme}>
                 {children}
             </div>
         </ThemeContext.Provider>

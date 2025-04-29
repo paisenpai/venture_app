@@ -1,0 +1,47 @@
+/* 
+    Tailwind Base Layer + Custom Styles
+
+    This CSS file includes the base layer of Tailwind CSS, which provides 
+    foundational styles such as resets and default typography. Additionally, 
+    it contains custom styles that extend or override the default Tailwind 
+    configuration to meet specific design requirements.
+
+    - Tailwind Base Layer: Ensures consistent styling across browsers and 
+        provides a clean slate for building components.
+    - Custom Styles: Adds project-specific adjustments or enhancements 
+        to complement the Tailwind framework.
+
+    Use this file to define global styles or to customize the base layer 
+    as needed for your project.
+*/
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  /* Custom styles can be added here */
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-gray-100 text-gray-900;
+  }
+  a {
+    @apply text-blue-600 hover:text-blue-800;
+  }
+}
+@layer components {
+  /* Custom component styles can be added here */
+  .btn {
+    @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600;
+  }
+}
+@layer utilities {
+  /* Custom utility classes can be added here */
+  .bg-custom {
+    @apply bg-gradient-to-r from-blue-500 to-green-500;
+  }
+}
+/* 
+    Note: The above code is a template for a global CSS file using Tailwind CSS.
+    You can modify the styles and classes as per your project's design requirements.
+*/

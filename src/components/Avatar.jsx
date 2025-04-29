@@ -1,3 +1,9 @@
+// Avatar.jsx
+// This component displays a user avatar. If an image URL is provided, it shows the image.
+// If not, it shows a placeholder with a question mark.
+// It accepts props for the image URL, alt text, and size of the avatar.
+// Import necessary libraries
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Avatar.css'; // Optional: Add styles for the avatar component

@@ -14,36 +14,36 @@ const Dashboard = () => {
   const { streak } = useStreakTracker(user?.streak || 0);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard</h1>
-      <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-        <div style={{ flex: 1, padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-          <h2>Summary</h2>
+    <div className="p-5">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div className="flex gap-5 mt-5">
+        <div className="flex-1 p-5 border border-gray-300 rounded-lg">
+          <h2 className="text-xl font-semibold">Summary</h2>
           <p>Total Users: 120</p>
           <p>Total Sales: $15,000</p>
           <p>Active Sessions: 45</p>
         </div>
-        <div style={{ flex: 1, padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-          <h2>Stats</h2>
+        <div className="flex-1 p-5 border border-gray-300 rounded-lg">
+          <h2 className="text-xl font-semibold">Stats</h2>
           <p>Daily Visitors: 1,200</p>
           <p>Monthly Revenue: $45,000</p>
           <p>Conversion Rate: 5%</p>
         </div>
       </div>
 
-      <div style={{ marginTop: "40px" }}>
-        <h2>User Progress</h2>
-        <div style={{ display: "flex", gap: "20px", marginTop: "20px" }}>
-          <div style={{ flex: 1, padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-            <h3>XP Level</h3>
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold">User Progress</h2>
+        <div className="flex gap-5 mt-5">
+          <div className="flex-1 p-5 border border-gray-300 rounded-lg">
+            <h3 className="text-lg font-medium">XP Level</h3>
             <XPLevelMeter level={level} xp={xp} nextLevelXP={nextLevelXP} />
           </div>
-          <div style={{ flex: 1, padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-            <h3>Streak</h3>
+          <div className="flex-1 p-5 border border-gray-300 rounded-lg">
+            <h3 className="text-lg font-medium">Streak</h3>
             <StreakDisplay streak={streak} />
           </div>
-          <div style={{ flex: 1, padding: "20px", border: "1px solid #ccc", borderRadius: "8px" }}>
-            <h3>Goals</h3>
+          <div className="flex-1 p-5 border border-gray-300 rounded-lg">
+            <h3 className="text-lg font-medium">Goals</h3>
             <GoalTracker user={user} />
           </div>
         </div>
