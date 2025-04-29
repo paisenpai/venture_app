@@ -1,12 +1,28 @@
-# React + Vite
+# TaskVenture
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TaskVenture is a gamified task management platform designed specifically for students, making productivity more engaging and sustainable. Unlike traditional to-do apps, TaskVenture incorporates game-like mechanics—such as XP, levels, streaks, and rewards—to keep users motivated. With features like customizable avatars, visual progress tracking, and habit reinforcement tools, TaskVenture transforms everyday productivity into an interactive and personalized experience.
 
-Currently, two official plugins are available:
+## Objectives and Goals
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Traditional task management apps often fail to maintain long-term engagement—they can be too plain, rigid, or uninspiring. TaskVenture addresses this by offering a task tracker that students will genuinely enjoy using. By blending productivity tools with gamification, TaskVenture helps users build lasting habits and stay consistently on track.
 
-## Expanding the ESLint configuration
+### Key Goals:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **⏱️ Task Management**: Enable users to create, organize, and prioritize daily tasks and habits effortlessly.
+- **🎮 Gamification**: Introduce XP, leveling, streak tracking, and unlockable rewards to enhance motivation and retention.
+- **🎨 Personalization**: Provide customizable avatars, themes, and progress tracking for a more engaging and personal experience.
+- **🧠 Behavioral Reinforcement**: Promote consistency through habit-building mechanics like achievements and daily streaks.
+- **📊 Progress Insights**: Deliver visual analytics and productivity trends to help users reflect, assess, and optimize their workflow.
+
+## Features and Functionalities
+
+- **EXP and Leveling System**: Earn experience points and level up as tasks are completed.
+- **Streak Tracking and Rewards**: Maintain streaks and unlock rewards for consistent task completion.
+- **Badges and Achievements**: Unlock badges for milestones and achievements.
+- **Avatar and Theme Customization**: Personalize avatars and themes to match user preferences.
+- **Daily, Weekly, and Monthly Goals**: Set and track goals across different timeframes.
+- **Recurring Tasks**: Schedule tasks that repeat on a regular basis.
+- **Task Prioritization**: Organize tasks by priority to focus on what matters most.
+- **Reminders and Notifications**: Stay on track with timely reminders and alerts.
+- **Visual Progress Reports**: View detailed progress reports and trends.
+- **Task Completion Stats**: Analyze task completion rates and productivity metrics.
