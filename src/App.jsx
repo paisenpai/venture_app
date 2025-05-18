@@ -4,31 +4,51 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
 
+// Sidebar navigation pages
 import Dashboard from './pages/Dashboard';
-import Character from './pages/Character';
-import Reports from './pages/Progress';
-import Settings from './pages/Settings';
-import Login from './pages/Login';
-import Register from './pages/Achievements';
 import Quests from './pages/Quests';
-import Register from './pages/Register';
+import Achievements from './pages/Achievements';
 import Progress from './pages/Progress';
+import Character from './pages/Character';
+import Settings from './pages/Settings';
+
+// Authentication pages
+import Login from './pages/Login';
+import Register from './pages/Register';
+
+// Layout and fallback
+import Sidebar from './components/Sidebar'; // Import Sidebar component
+import NotFound from './pages/NotFound'; // Import NotFound page for fallback
 
 const App = () => (
   <AuthProvider>
     <UserProvider>
       <ThemeProvider>
         <Router>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/quests" element={<Quests />} />
-            <Route path="/progress" element={<Progress />} />
-            <Route path="/character" element={<Character />} />
-            <Route path="/reports" element={<Reports />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
+          <div className="flex">
+            {/* Sidebar */}
+            <Sidebar />
+
+            {/* Main Content */}
+            <div className="flex-1">
+              <Routes>
+                {/* Main Pages */}
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/quests" element={<Quests />} />
+                <Route path="/achievements" element={<Achievements />} />
+                <Route path="/progress" element={<Progress />} />
+                <Route path="/character" element={<Character />} />
+                <Route path="/settings" element={<Settings />} />
+
+                {/* Authentication Pages */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
+                {/* Fallback Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </div>
+          </div>
         </Router>
       </ThemeProvider>
     </UserProvider>
