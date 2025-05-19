@@ -13,7 +13,7 @@ function Sidebar() {
 
   const links = [
     { path: "/dashboard", label: "Dashboard", iconSrc: "/icons/Dashboard.svg" },
-    { path: "/quest", label: "Quests", iconSrc: "/icons/quest.svg" },
+    { path: "/quests", label: "Quests", iconSrc: "/icons/quest.svg" },
     { path: "/achievements", label: "Achievements", iconSrc: "/icons/achievements.svg" },
     { path: "/progress", label: "Progress", iconSrc: "/icons/progress.svg" },
     { path: "/character", label: "Character", iconSrc: "/icons/character.svg" },
@@ -24,7 +24,7 @@ function Sidebar() {
     <div
       className={`transition-all duration-300 ${
         isHovered ? 'w-80' : 'w-28'
-      } h-[1024px] py-10 bg-white rounded-tr-[36px] rounded-br-[36px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-center gap-28`}
+      } min-h-screen py-10 bg-white rounded-tr-[36px] rounded-br-[36px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-center gap-28`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

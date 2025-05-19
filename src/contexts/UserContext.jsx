@@ -5,7 +5,7 @@
 // It will be used in the App component to provide user data and authentication state to the entire app
 // Import necessary libraries
 
-import React, { createContext, useState, useContext } from 'react';
+import { createContext, useState, useContext } from 'react';
 
 // Create the UserContext
 const UserContext = createContext();
@@ -13,7 +13,7 @@ const UserContext = createContext();
 // Create a provider component
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState({
-        username: '',
+        name: '', // use 'name' instead of 'username'
         xp: 0,
         level: 1,
         avatar: '',
@@ -28,7 +28,7 @@ export const UserProvider = ({ children }) => {
 
     const logout = () => {
         setUser({
-            username: '',
+            name: '', // use 'name' instead of 'username'
             xp: 0,
             level: 1,
             avatar: '',

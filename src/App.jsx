@@ -21,10 +21,10 @@ import Sidebar from './components/Sidebar'; // Import Sidebar component
 import NotFound from './pages/NotFound'; // Import NotFound page for fallback
 
 const App = () => (
-  <AuthProvider>
-    <UserProvider>
-      <ThemeProvider>
-        <Router>
+  <Router>
+    <AuthProvider>
+      <UserProvider>
+        <ThemeProvider>
           <div className="flex">
             {/* Sidebar */}
             <Sidebar />
@@ -49,10 +49,10 @@ const App = () => (
               </Routes>
             </div>
           </div>
-        </Router>
-      </ThemeProvider>
-    </UserProvider>
-  </AuthProvider>
+        </ThemeProvider>
+      </UserProvider>
+    </AuthProvider>
+  </Router>
 );
 
 export default App;
