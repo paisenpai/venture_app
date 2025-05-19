@@ -1,3 +1,7 @@
+// Task Status Menu Component "Not Done Yet"
+// This component displays a task status menu with different statuses.
+// It allows the user to select a status and displays the selected status with appropriate styling.
+
 import React, { useState } from 'react';
 
 const TaskListConditions = () => {

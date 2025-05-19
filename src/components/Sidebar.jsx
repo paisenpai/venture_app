@@ -1,6 +1,12 @@
+// Side bar component "NOT DONE YET"
+// This component is a sidebar that contains navigation buttons.
+// It expands and collapses on hover.
+// The sidebar contains a logo and a list of navigation links.
+
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import SideBarButton from './SideBarButton'; // Import the SideBarButton component
+import SideBarButton from './SideBarButton';
 
 function Sidebar() {
   const [isHovered, setIsHovered] = useState(false);
@@ -39,7 +45,7 @@ function ExpandedSidebar({ links }) {
             key={index}
             iconSrc={link.iconSrc}
             label={link.label}
-            onClick={() => navigate(link.path)} // Navigate to the specified path
+            onClick={() => navigate(link.path)}
           />
         ))}
       </div>

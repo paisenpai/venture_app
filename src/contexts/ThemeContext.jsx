@@ -1,39 +1,38 @@
 // ThemeContext.jsx
-// This file contains the ThemeContext and ThemeProvider component
+// This file contains the ThemeContext and ThemeProvider component,
 // which provides theme management for the application.
 // It allows toggling between light and dark themes.
-// It uses React's Context API to provide theme-related state and functions
-// to the entire application.
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import './styles.css';
 
-// Create ThemeContext
+// Create ThemeContext with default values
 const ThemeContext = createContext({
     theme: 'light', // Default theme
-    toggleTheme: () => {}, // Function to toggle theme
+    toggleTheme: () => {}, // Placeholder function for toggling theme
 });
 
-// ThemeProvider component
+// ThemeProvider component to manage and provide theme state
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(() => {
-try {
-        const storedTheme = localStorage.getItem('theme');
-        return storedTheme === 'dark' ? 'dark' : 'light';
-} catch {
-            return 'light';
+        try {
+            const storedTheme = localStorage.getItem('theme');
+            return storedTheme === 'dark' ? 'dark' : 'light';
+        } catch {
+            return 'light'; // Default to light theme if localStorage fails
         }
     });
 
-    // Update localStorage whenever theme changes
+    // Update localStorage whenever the theme changes
     useEffect(() => {
-try {
-        localStorage.setItem('theme', theme);
-} catch {
-            console.error('Failed to save theme to localStorage');
+        try {
+            localStorage.setItem('theme', theme);
+        } catch (error) {
+            console.error('Failed to save theme to localStorage:', error);
         }
     }, [theme]);
 
-    // Toggle between light and dark mode
+    // Function to toggle between light and dark themes
     const toggleTheme = () => {
         setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
     };

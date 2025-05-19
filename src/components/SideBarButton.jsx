@@ -1,3 +1,8 @@
+/* SIDE BAR BUTTON COMPONENT
+*
+* This component is a reusable button for the sidebar.
+*/
+
 import React from 'react';
 
 const SideBarButton = ({ iconSrc, label, onClick }) => {

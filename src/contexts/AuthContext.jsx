@@ -1,3 +1,9 @@
+// NOT DONE YET 
+// Authentication context to manage user state and authentication actions
+// This context will provide authentication state and functions to the rest of the app
+// such as login, logout, and register.
+
+
 import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 

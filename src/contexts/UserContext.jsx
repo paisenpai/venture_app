@@ -1,5 +1,11 @@
-import React, { createContext, useState, useContext } from 'react';
+// NOT DONE YET
+// This file will contain the UserContext and UserProvider
+// It will manage user data and authentication state
+// It will also provide functions to update user data and authentication state
+// It will be used in the App component to provide user data and authentication state to the entire app
+// Import necessary libraries
 
+import React, { createContext, useState, useContext } from 'react';
 
 // Create the UserContext
 const UserContext = createContext();
