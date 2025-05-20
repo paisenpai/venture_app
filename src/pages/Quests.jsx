@@ -1,10 +1,7 @@
-import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import QuestBoard from '../components/QuestBoard';
 import useLevelSystem from '../features/leveling/useLevelSystem';
-import useReminders from '../features/notifications/useReminders';
-import { UserContext } from '../contexts/UserContext';
 
 const quests = [
     {
@@ -47,31 +44,23 @@ const quests = [
 
 const Quests = () => {
     const navigate = useNavigate();
-    const { user } = useContext(UserContext);
     const { level, addXP } = useLevelSystem();
-    const { setReminder } = useReminders();
 
-    // Handle clicking a quest card
     const handleNavigate = (questId) => {
         navigate(`/quests/${questId}`);
     };
 
-    // Handle completing a quest (for demo, just adds XP)
     const handleCompleteQuest = (quest) => {
         addXP(quest.xp);
-        setReminder(`You gained ${quest.xp} XP for completing "${quest.name}"!`);
     };
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            {/* Sidebar on the left */}
             <Sidebar />
-
-            {/* Main content */}
             <div className="flex-1 p-10">
                 <h1 className="text-3xl font-bold mb-2">Quests</h1>
                 <p className="mb-8 text-lg">
-                    Welcome, {user?.name || 'Adventurer'}! You are currently at level {level}.
+                    Welcome, Adventurer! You are currently at level {level}.
                 </p>
                 <div className="flex flex-wrap gap-8">
                     {quests.map((quest) => (
@@ -103,7 +92,6 @@ const Quests = () => {
                             </button>
                         </div>
                     ))}
-                    {/* Add Quest Card */}
                     <div>
                         <QuestBoard type="add" />
                     </div>

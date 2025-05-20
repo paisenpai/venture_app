@@ -1,16 +1,19 @@
 import React, { useContext } from 'react';
-import AvatarSelector from '../components/AvatarSelector';
-import { UserContext } from '../contexts/UserContext';
 import { ThemeContext } from '../contexts/ThemeContext';
 
 const Character = () => {
-    const user = useContext(UserContext); // Access user data from UserContext
     const theme = useContext(ThemeContext); // Access theme data from ThemeContext
+
+    const user = {
+        name: 'John Doe',
+        age: 30,
+        occupation: 'Adventurer',
+        bio: 'Loves exploring new worlds and taking on challenges.',
+    };
 
     return (
         <div style={{ ...styles.container, backgroundColor: theme.background, color: theme.color }}>
             <h1 style={styles.header}>Character Information</h1>
-            <AvatarSelector />
             <div style={styles.infoBox}>
                 <p><strong>Name:</strong> {user.name}</p>
                 <p><strong>Age:</strong> {user.age}</p>

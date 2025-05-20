@@ -1,12 +1,6 @@
-import { useState, useContext } from "react";
-import { UserContext } from '../../contexts/UserContext';
-import { xpRequiredForNextLevel } from '../../utils/xpCalculator';
+import { useState } from "react";
 
-// File: /e:/CODE/Venture Web App/venture/src/features/levels/useLevelSystem.js
-
-export function useLevelSystem(initialXP = 0) {
-    const { user, updateUser } = useContext(UserContext); // Access UserContext
-
+const useLevelSystem = (initialXP = 0) => {
     const levelThresholds = [0, 100, 300, 600, 1000]; // Example thresholds for levels
 
     const calculateLevelFromXP = (xp) => {
@@ -30,7 +24,8 @@ export function useLevelSystem(initialXP = 0) {
         if (currentLevel >= levelThresholds.length) {
             return null; // Max level reached
         }
-        return xpRequiredForNextLevel(currentXP, levelThresholds[currentLevel]);
+        // Return the XP required for the next level threshold
+        return levelThresholds[currentLevel] - currentXP;
     };
 
     const [xp, setXP] = useState(initialXP);
@@ -40,13 +35,11 @@ export function useLevelSystem(initialXP = 0) {
         if (amount < 0) {
             throw new Error("XP amount cannot be negative");
         }
-        const newXP = xp + amount;
-        setXP(newXP);
-        const newLevel = calculateLevelFromXP(newXP);
-        setLevel(newLevel);
-
-        // Optionally update user data in UserContext
-        updateUser({ ...user, xp: newXP, level: newLevel });
+        setXP(prevXP => {
+            const newXP = prevXP + amount;
+            setLevel(calculateLevelFromXP(newXP));
+            return newXP;
+        });
     };
 
     return {
@@ -55,4 +48,6 @@ export function useLevelSystem(initialXP = 0) {
         xpForNextLevel: getXPForNextLevel(xp),
         addXP,
     };
-}
+};
+
+export default useLevelSystem;

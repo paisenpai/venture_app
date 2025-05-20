@@ -1,28 +1,39 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import Sidebar from '../components/Sidebar';
 
 const MainLayout = () => {
     return (
-        <div style={{ display: 'flex', height: '100vh' }}>
+        <div className="flex min-h-screen w-full bg-gray-100">
             {/* Sidebar */}
-            <aside style={{ width: '250px', backgroundColor: '#2c3e50', color: '#ecf0f1', padding: '20px' }}>
-                <h2>Sidebar</h2>
-                <ul>
-                    <li>Dashboard</li>
-                    <li>Settings</li>
-                    <li>Profile</li>
-                </ul>
-            </aside>
-
-            {/* Main Content */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <Sidebar />
+            {/* Add left margin to avoid content being hidden behind fixed sidebar */}
+            <div className="flex-1 ml-[7rem] md:ml-[20rem] p-6 min-h-screen w-full">
                 {/* Navbar */}
-                <header style={{ height: '60px', backgroundColor: '#34495e', color: '#ecf0f1', display: 'flex', alignItems: 'center', padding: '0 20px' }}>
+                <header
+                    style={{
+                        height: '4rem', // 64px
+                        backgroundColor: '#34495e',
+                        color: '#ecf0f1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 1.25rem', // 20px
+                        width: '100%',
+                    }}
+                >
                     <h1>Dashboard</h1>
                 </header>
 
                 {/* Page Content */}
-                <main style={{ flex: 1, padding: '20px', backgroundColor: '#ecf0f1' }}>
+                <main
+                    style={{
+                        flex: 1,
+                        padding: '1.25rem', // 20px
+                        backgroundColor: '#ecf0f1',
+                        minHeight: 'calc(100vh - 4rem)',
+                        width: '100%',
+                    }}
+                >
                     <Outlet />
                 </main>
             </div>

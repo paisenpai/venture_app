@@ -4,22 +4,37 @@
  * This component defines the main routes for the application using React Router.
  * It imports necessary components and sets up the routing structure.
  **/
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
+import MainLayout from '../layouts/MainLayout';
+import AuthLayout from '../layouts/AuthLayout';
+
 import Dashboard from '../pages/Dashboard';
-import Login from '../pages/Login';
-import Settings from '../pages/Settings';
+import Quests from '../pages/Quests';
 import Achievements from '../pages/Achievements';
-import NotFound from '../pages/NotFound';
+import Progress from '../pages/Progress';
+import Character from '../pages/Character';
+import Settings from '../pages/Settings';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/achievements" element={<Achievements />} />
-      <Route path="*" element={<NotFound />} />
+      {/* Auth routes */}
+      <Route element={<AuthLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Route>
+
+      {/* Main app routes with sidebar */}
+      <Route element={<MainLayout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="quests" element={<Quests />} />
+        <Route path="achievements" element={<Achievements />} />
+        <Route path="progress" element={<Progress />} />
+        <Route path="character" element={<Character />} />
+        <Route path="settings" element={<Settings />} />
+      </Route>
     </Routes>
   );
 }

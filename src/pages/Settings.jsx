@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React from "react";
+import { useContext } from 'react';
 import { ThemeContext } from '../contexts/ThemeContext';
-import { AuthContext } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext'; // <-- use the hook
 
 const Settings = () => {
     const { theme, toggleTheme } = useContext(ThemeContext);
-    const { user, updateUser } = useContext(AuthContext);
+    const { user, updateUser } = useAuth(); // <-- use the hook
 
     const handleSubmit = (e) => {
         e.preventDefault();

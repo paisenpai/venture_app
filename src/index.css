@@ -1,22 +1,25 @@
-/* 
-    Tailwind Base Layer + Custom Styles
+/*
+  Tailwind Base Layer + Custom Styles
 
-    This CSS file includes the base layer of Tailwind CSS, which provides 
-    foundational styles such as resets and default typography. Additionally, 
-    it contains custom styles that extend or override the default Tailwind 
-    configuration to meet specific design requirements.
+  This CSS file includes the base layer of Tailwind CSS, which provides 
+  foundational styles such as resets and default typography. Additionally, 
+  it contains custom styles that extend or override the default Tailwind 
+  configuration to meet specific design requirements.
 
-    - Tailwind Base Layer: Ensures consistent styling across browsers and 
-        provides a clean slate for building components.
-    - Custom Styles: Adds project-specific adjustments or enhancements 
-        to complement the Tailwind framework.
+  - Tailwind Base Layer: Ensures consistent styling across browsers and 
+    provides a clean slate for building components.
+  - Custom Styles: Adds project-specific adjustments or enhancements 
+    to complement the Tailwind framework.
 
-    Use this file to define global styles or to customize the base layer 
-    as needed for your project.
+  Use this file to define global styles or to customize the base layer 
+  as needed for your project.
 */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Base Layer */
 @layer base {
   /* Custom styles can be added here */
   html {
@@ -28,20 +31,66 @@
   a {
     @apply text-blue-600 hover:text-blue-800;
   }
+  #root {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+  }
 }
+
+/* Components Layer */
 @layer components {
   /* Custom component styles can be added here */
   .btn {
     @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600;
   }
+  .card {
+    padding: 2em;
+  }
 }
+
+/* Utilities Layer */
 @layer utilities {
   /* Custom utility classes can be added here */
   .bg-custom {
     @apply bg-gradient-to-r from-blue-500 to-green-500;
   }
+  .logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+  }
+  .logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+  .logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
+  .read-the-docs {
+    color: #888;
+  }
 }
-/* 
-    Note: The above code is a template for a global CSS file using Tailwind CSS.
-    You can modify the styles and classes as per your project's design requirements.
+
+/* Animations */
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Media Queries */
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+/*
+  Note: The above code is a template for a global CSS file using Tailwind CSS.
+  You can modify the styles and classes as per your project's design requirements.
 */

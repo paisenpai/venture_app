@@ -12,9 +12,10 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
     "axios": "^1.9.0",
+    "prop-types": "^15.8.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -27,7 +28,20 @@
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.4",
+    "tailwindcss": "^4.1.7",
     "vite": "^6.3.1"
-  }
+  },
+  "description": "TaskVenture is a gamified task management platform designed specifically for students, making productivity more engaging and sustainable. Unlike traditional to-do apps, TaskVenture incorporates game-like mechanics—such as XP, levels, streaks, and rewards—to keep users motivated. With features like customizable avatars, visual progress tracking, and habit reinforcement tools, TaskVenture transforms everyday productivity into an interactive and personalized experience.",
+  "main": "eslint.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paisenpai/venture_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paisenpai/venture_app/issues"
+  },
+  "homepage": "https://github.com/paisenpai/venture_app#readme"
 }

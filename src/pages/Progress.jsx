@@ -1,13 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../components/ProgressBar';
-import useProgressStats from '../features/reports/useProgressStats';
-import { UserContext } from '../contexts/UserContext';
+import useProgressStats from '../features/Progress/useProgressStats'; // <-- Corrected path
 
 const Progress = () => {
     const navigate = useNavigate();
-    const { user } = useContext(UserContext); // Using UserContext
-    const { tasks } = useProgressStats(); // Using useProgressStats to fetch tasks
+    const { stats, loading, error } = useProgressStats(); // <-- Use stats, loading, error
 
     const handleNavigation = (path) => {
         navigate(path);
@@ -16,15 +14,17 @@ const Progress = () => {
     return (
         <div>
             <h1>Progress Page</h1>
-            <p>Welcome, {user?.name || 'Guest'}! Track your progress here.</p>
+            <p>Welcome! Track your progress here.</p>
 
             <div>
                 <h2>Your Tasks</h2>
+                {loading && <p>Loading...</p>}
+                {error && <p style={{ color: 'red' }}>{error}</p>}
                 <ul>
-                    {tasks.map((task) => (
+                    {stats?.tasks?.map((task) => (
                         <li key={task.id} style={{ marginBottom: '10px' }}>
                             <strong>{task.name}</strong>
-                            <ProgressBar progress={task.progress} /> {/* Using ProgressBar */}
+                            <ProgressBar progress={task.progress} />
                             <p>{task.progress}% completed</p>
                         </li>
                     ))}

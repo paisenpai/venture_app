@@ -1,9 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { UserContext } from '../../contexts/UserContext';
 
-const useProgressStats = () => {
-    const { user } = useContext(UserContext); // Access user data from UserContext
+const useProgressStats = (userId) => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -11,7 +9,7 @@ const useProgressStats = () => {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            const response = await axios.get(`/api/progress/stats?userId=${user.id}`); // Use user ID in API call
+            const response = await axios.get(`/api/progress/stats?userId=${userId}`);
             setStats(response.data);
         } catch (err) {
             setError(err.message || 'Failed to fetch stats');
@@ -25,7 +23,7 @@ const useProgressStats = () => {
             setLoading(true);
             const response = await axios.post('/api/progress/stats/generate', {
                 ...filters,
-                userId: user.id, // Include user ID in the request payload
+                userId,
             });
             setStats(response.data);
         } catch (err) {
@@ -36,10 +34,10 @@ const useProgressStats = () => {
     };
 
     useEffect(() => {
-        if (user?.id) {
+        if (userId) {
             fetchStats();
         }
-    }, [user]);
+    }, [userId]);
 
     return { stats, loading, error, fetchStats, generateStats };
 };

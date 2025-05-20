@@ -7,7 +7,7 @@
  */
 export function calculateXpForNextLevel(currentLevel) {
     if (currentLevel < 1) {
-        throw new Error("Level must be 1 or higher.");
+        throw new Error("Level must be 1 or higher.")
     }
     return Math.floor(100 * Math.pow(1.5, currentLevel - 1)); // XP increases exponentially
 }
@@ -66,3 +66,4 @@ export function calculateXpPerTask(difficulty) {
 
     return xp;
 }
+

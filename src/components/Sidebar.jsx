@@ -1,99 +1,142 @@
-// Side bar component "NOT DONE YET"
-// This component is a sidebar that contains navigation buttons.
-// It expands and collapses on hover.
-// The sidebar contains a logo and a list of navigation links.
+import { useState, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import dashboardIcon from '../assets/icons/Dashboard.svg';
+import questIcon from '../assets/icons/Quest.svg';
+import achievementsIcon from '../assets/icons/Achievements.svg';
+import progressIcon from '../assets/icons/Progress.svg';
+import characterIcon from '../assets/icons/Character.svg';
+import settingsIcon from '../assets/icons/Settings.svg';
+import FullLogoIcon from '../assets/icons/FullLogo.svg';
 
+const links = [
+  { label: 'Dashboard', icon: dashboardIcon, path: '/' },
+  { label: 'Quests', icon: questIcon, path: '/quests' },
+  { label: 'Achievements', icon: achievementsIcon, path: '/achievements' },
+  { label: 'Progress', icon: progressIcon, path: '/progress' },
+  { label: 'Character', icon: characterIcon, path: '/character' },
+];
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import SideBarButton from './SideBarButton';
+const buttonBase =
+  "w-16 h-16 p-4 bg-stone-50 rounded-full shadow-2xl flex items-center justify-start mb-4 transition-all duration-200";
+const iconBase = "w-14 h-14 object-contain";
 
-function Sidebar() {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const links = [
-    { path: "/dashboard", label: "Dashboard", iconSrc: "/icons/Dashboard.svg" },
-    { path: "/quests", label: "Quests", iconSrc: "/icons/quest.svg" },
-    { path: "/achievements", label: "Achievements", iconSrc: "/icons/achievements.svg" },
-    { path: "/progress", label: "Progress", iconSrc: "/icons/progress.svg" },
-    { path: "/character", label: "Character", iconSrc: "/icons/character.svg" },
-    { path: "/settings", label: "Settings", iconSrc: "/icons/settings.svg" },
-  ];
-
+function SidebarButton({ icon, label, selected, showText, onClick, className = "" }) {
   return (
-    <div
-      className={`transition-all duration-300 ${
-        isHovered ? 'w-80' : 'w-28'
-      } min-h-screen py-10 bg-white rounded-tr-[36px] rounded-br-[36px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex flex-col justify-start items-center gap-28`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+    <button
+      onClick={onClick}
+      className={`
+        ${buttonBase}
+        w-full flex-row items-center
+        ${showText && selected ? 'bg-indigo-100 shadow-2xl' : 'bg-transparent shadow-none'}
+        ${className}
+      `}
+      style={{ minWidth: '4rem', minHeight: '4rem' }}
+      data-state={selected ? "Selected" : "NotSelected"}
+      data-show-icon="true"
+      data-show-text={showText ? "true" : "false"}
+      type="button"
     >
-      {isHovered ? <ExpandedSidebar links={links} /> : <CollapsedSidebar />}
-    </div>
-  );
-}
-
-function ExpandedSidebar({ links }) {
-  const navigate = useNavigate();
-
-  return (
-    <div className="w-80 h-[1024px] py-10 bg-white rounded-tr-[36px] rounded-br-[36px] shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex flex-col justify-center items-center gap-28">
-      <LogoWithTypeface />
-      <div className="self-stretch pl-5 flex flex-col justify-center items-start gap-8">
-        {links.map((link, index) => (
-          <SideBarButton
-            key={index}
-            iconSrc={link.iconSrc}
-            label={link.label}
-            onClick={() => navigate(link.path)}
-          />
-        ))}
+      <div className="flex-shrink-0 flex items-center justify-center">
+        <img className={iconBase} src={icon} alt={label} />
       </div>
-    </div>
+      {showText && (
+        <span className="ml-4 text-left text-indigo-900 text-2xl font-bold font-['Typold'] flex-1">
+          {label}
+        </span>
+      )}
+    </button>
   );
 }
 
-function CollapsedSidebar() {
-  return (
-    <div
-      data-property-1="Default"
-      data-show-logo-typface="false"
-      className="inline-flex justify-center items-center gap-5"
-    >
-      <Logo />
-    </div>
-  );
-}
+export default function Sidebar() {
+  const [expanded, setExpanded] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const timeoutRef = useRef();
 
-function LogoWithTypeface() {
+  // Handlers to prevent flicker/glitch
+  const handleMouseEnter = () => {
+    clearTimeout(timeoutRef.current);
+    setExpanded(true);
+  };
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => setExpanded(false), 150);
+  };
+
+  // Collapsed (base) form
+  if (!expanded) {
+    return (
+      <aside
+        className="fixed left-0 top-0 h-screen w-[7rem] bg-white shadow-2xl rounded-tr-[2.5rem] rounded-br-[2.5rem] flex flex-col justify-between items-center z-30"
+        onMouseEnter={handleMouseEnter}
+        style={{ minWidth: '7rem' }}
+      >
+        <div className="flex flex-col justify-between items-center w-full h-full py-8">
+          {/* Logo */}
+          <div className="flex flex-col items-center">
+            <img className="w-14 h-14 rounded-xl mb-8" src="/Logo.svg" alt="Logo" />
+          </div>
+          {/* Nav buttons */}
+          <div className="flex flex-col items-center flex-1 justify-center w-full">
+            {links.map((link) => (
+              <SidebarButton
+                key={link.path}
+                icon={link.icon}
+                label={link.label}
+                selected={location.pathname === link.path}
+                showText={false}
+                onClick={() => navigate(link.path)}
+              />
+            ))}
+          </div>
+          {/* Settings button */}
+          <SidebarButton
+            icon={settingsIcon}
+            label="Settings"
+            selected={location.pathname === '/settings'}
+            showText={false}
+            onClick={() => navigate('/settings')}
+          />
+        </div>
+      </aside>
+    );
+  }
+
+  // Expanded form (on hover)
   return (
-    <div
-      data-property-1="Default"
-      data-show-logo-typface="true"
-      className="inline-flex justify-center items-center gap-5"
+    <aside
+      className="fixed left-0 top-0 h-screen w-[18rem] bg-white shadow-2xl rounded-tr-[2.5rem] rounded-br-[2.5rem] flex flex-col justify-between items-center z-30 transition-all duration-300"
+      style={{ minWidth: '18rem' }}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
     >
-      <Logo />
-      <div className="w-36 h-14 flex justify-center items-center flex-wrap content-center">
-        <img
-          className="flex-1 h-10"
-          src="https://placehold.co/143x40"
-          alt="Logo Typeface"
+      <div className="flex flex-col justify-between items-center w-full h-full py-8">
+        {/* Logo */}
+        <div className="flex flex-col items-center">
+          <img className="h-14 mb-8" src={FullLogoIcon} alt="Venture Full Logo" />
+        </div>
+        {/* Nav buttons */}
+        <div className="flex flex-col items-start flex-1 justify-center w-full pl-5">
+          {links.map((link) => (
+            <SidebarButton
+              key={link.path}
+              icon={link.icon}
+              label={link.label}
+              selected={location.pathname === link.path}
+              showText={true}
+              onClick={() => navigate(link.path)}
+            />
+          ))}
+        </div>
+        {/* Settings button */}
+        <SidebarButton
+          icon={settingsIcon}
+          label="Settings"
+          selected={location.pathname === '/settings'}
+          showText={expanded}
+          onClick={() => navigate('/settings')}
         />
       </div>
-    </div>
+    </aside>
   );
 }
-
-function Logo() {
-  return (
-    <div className="rounded-xl shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] flex justify-center items-center gap-2.5 flex-wrap content-center">
-      <img
-        className="w-14 h-14 rounded-xl shadow-[1px_1px_3.299999952316284px_0px_rgba(38,33,110,0.64)]"
-        src="https://placehold.co/60x60"
-        alt="Logo"
-      />
-    </div>
-  );
-}
-
-export default Sidebar;

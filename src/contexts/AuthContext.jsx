@@ -33,8 +33,15 @@ export const AuthProvider = ({ children }) => {
         // After successful registration, you might want to log the user in
     };
 
+    const updateUser = (updates) => {
+        setUser((prev) => ({
+            ...prev,
+            ...updates,
+        }));
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, register }}>
+        <AuthContext.Provider value={{ user, login, logout, register, updateUser }}>
             {children}
         </AuthContext.Provider>
     );
@@ -43,3 +50,5 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
     return useContext(AuthContext);
 };
+
+export { AuthContext };
