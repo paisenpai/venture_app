@@ -1,66 +1,42 @@
-/*
-  Tailwind Base Layer + Custom Styles
-
-  This CSS file includes the base layer of Tailwind CSS, which provides 
-  foundational styles such as resets and default typography. Additionally, 
-  it contains custom styles that extend or override the default Tailwind 
-  configuration to meet specific design requirements.
-
-  - Tailwind Base Layer: Ensures consistent styling across browsers and 
-    provides a clean slate for building components.
-  - Custom Styles: Adds project-specific adjustments or enhancements 
-    to complement the Tailwind framework.
-
-  Use this file to define global styles or to customize the base layer 
-  as needed for your project.
-*/
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Base Layer */
+@tailwind base;
 @layer base {
-  /* Custom styles can be added here */
   html {
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-gray-100 text-gray-900;
+    @apply bg-gray-100 text-gray-900 antialiased;
   }
   a {
-    @apply text-blue-600 hover:text-blue-800;
+    @apply text-blue-600 hover:text-blue-800 transition-colors duration-200;
   }
   #root {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 2rem;
-    text-align: center;
+    @apply max-w-screen-xl mx-auto px-4 sm:px-8 py-8 text-left;
   }
 }
 
 /* Components Layer */
+@tailwind components;
 @layer components {
-  /* Custom component styles can be added here */
   .btn {
-    @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600;
+    @apply px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 active:bg-blue-700 transition-colors duration-150 font-semibold;
+  }
+  .btn-danger {
+    @apply bg-red-500 hover:bg-red-600 active:bg-red-700;
   }
   .card {
-    padding: 2em;
+    @apply p-6 bg-white rounded-xl shadow-md;
   }
 }
 
 /* Utilities Layer */
+@tailwind utilities;
 @layer utilities {
-  /* Custom utility classes can be added here */
   .bg-custom {
     @apply bg-gradient-to-r from-blue-500 to-green-500;
   }
   .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
+    @apply h-24 p-6 transition-filter duration-300 will-change-transform;
   }
   .logo:hover {
     filter: drop-shadow(0 0 2em #646cffaa);
@@ -69,7 +45,7 @@
     filter: drop-shadow(0 0 2em #61dafbaa);
   }
   .read-the-docs {
-    color: #888;
+    @apply text-gray-400;
   }
 }
 
@@ -83,14 +59,18 @@
   }
 }
 
-/* Media Queries */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
-/*
-  Note: The above code is a template for a global CSS file using Tailwind CSS.
-  You can modify the styles and classes as per your project's design requirements.
+/* Improvements:
+   - Used @tailwind base/components/utilities for proper Tailwind layering.
+   - Improved #root for responsive padding and alignment.
+   - Enhanced .btn and .card classes for better UI/UX.
+   - Added antialiased to body for better font rendering.
+   - Added transition to links for smoother hover.
+   - Used max-w-screen-xl for better container scaling.
+   - Kept all custom CSS minimal and utility-first.
 */

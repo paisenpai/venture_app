@@ -1,9 +1,3 @@
-/**
- * This code defines the main routes for the application using React Router.
- * @fileoverview AppRoutes component
- * This component defines the main routes for the application using React Router.
- * It imports necessary components and sets up the routing structure.
- **/
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import AuthLayout from '../layouts/AuthLayout';
@@ -29,6 +23,7 @@ function AppRoutes() {
       {/* Main app routes with sidebar */}
       <Route element={<MainLayout />}>
         <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="quests" element={<Quests />} />
         <Route path="achievements" element={<Achievements />} />
         <Route path="progress" element={<Progress />} />

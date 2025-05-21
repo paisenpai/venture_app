@@ -1,44 +1,47 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { ThemeContext } from '../contexts/ThemeContext';
 
-const Character = () => {
-    const theme = useContext(ThemeContext); // Access theme data from ThemeContext
-
-    const user = {
-        name: 'John Doe',
-        age: 30,
-        occupation: 'Adventurer',
-        bio: 'Loves exploring new worlds and taking on challenges.',
-    };
-
-    return (
-        <div style={{ ...styles.container, backgroundColor: theme.background, color: theme.color }}>
-            <h1 style={styles.header}>Character Information</h1>
-            <div style={styles.infoBox}>
-                <p><strong>Name:</strong> {user.name}</p>
-                <p><strong>Age:</strong> {user.age}</p>
-                <p><strong>Occupation:</strong> {user.occupation}</p>
-                <p><strong>Bio:</strong> {user.bio}</p>
-            </div>
-        </div>
-    );
+const user = {
+  name: 'John Doe',
+  age: 30,
+  occupation: 'Adventurer',
+  bio: 'Loves exploring new worlds and taking on challenges.',
 };
 
-const styles = {
-    container: {
-        padding: '20px',
+const Character = () => {
+  const theme = useContext(ThemeContext);
+
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{
+        background: theme?.background,
+        color: theme?.color,
         fontFamily: 'Arial, sans-serif',
-    },
-    header: {
-        fontSize: '24px',
-        marginBottom: '10px',
-    },
-    infoBox: {
-        border: '1px solid #ccc',
-        borderRadius: '5px',
-        padding: '15px',
-        backgroundColor: '#f9f9f9',
-    },
+      }}
+    >
+      <div
+        className="bg-white rounded-xl shadow-md p-8 min-w-[280px] max-w-[350px] w-full"
+        style={{
+          background: theme?.infoBoxBackground || '#f9f9f9',
+        }}
+      >
+        <h2 className="text-2xl font-bold mb-5 text-center">Character</h2>
+        <div className="mb-3">
+          <strong>Name:</strong> {user.name}
+        </div>
+        <div className="mb-3">
+          <strong>Age:</strong> {user.age}
+        </div>
+        <div className="mb-3">
+          <strong>Occupation:</strong> {user.occupation}
+        </div>
+        <div>
+          <strong>Bio:</strong> {user.bio}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Character;

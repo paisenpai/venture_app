@@ -1,97 +1,52 @@
-import React from "react";
-import { useContext } from 'react';
+import React, { useContext } from "react";
 import { ThemeContext } from '../contexts/ThemeContext';
-import { useAuth } from '../contexts/AuthContext'; // <-- use the hook
 
 const Settings = () => {
-    const { theme, toggleTheme } = useContext(ThemeContext);
-    const { user, updateUser } = useAuth(); // <-- use the hook
+  const themeContext = useContext(ThemeContext) || {};
+  const theme = themeContext.theme || {
+    background: '#ffffff',
+    color: '#000000',
+    infoBoxBackground: '#f9f9f9',
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        // Example: Update user logic
-        const updatedUser = {
-            username: e.target.username.value,
-            email: e.target.email.value,
-            password: e.target.password.value,
-        };
-        updateUser(updatedUser);
-        alert('Settings updated successfully!');
-    };
+  // Example site settings actions
+  const handleThemeToggle = () => {
+    if (themeContext.toggleTheme) themeContext.toggleTheme();
+  };
 
-    return (
-        <div style={{ padding: '20px', backgroundColor: theme.background, color: theme.color }}>
-            <h1>Settings</h1>
-            <p>Manage your application settings here.</p>
-            <div style={{ marginTop: '20px' }}>
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="username" style={{ display: 'block', marginBottom: '5px' }}>
-                            Username:
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            name="username"
-                            defaultValue={user.username}
-                            placeholder="Enter your username"
-                            style={{ padding: '8px', width: '100%' }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>
-                            Email:
-                        </label>
-                        <input
-                            type="email"
-                            id="email"
-                            name="email"
-                            defaultValue={user.email}
-                            placeholder="Enter your email"
-                            style={{ padding: '8px', width: '100%' }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: '15px' }}>
-                        <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>
-                            Password:
-                        </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            placeholder="Enter your password"
-                            style={{ padding: '8px', width: '100%' }}
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        style={{
-                            padding: '10px 20px',
-                            backgroundColor: '#007BFF',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '5px',
-                        }}
-                    >
-                        Save Changes
-                    </button>
-                </form>
-                <button
-                    onClick={toggleTheme}
-                    style={{
-                        marginTop: '20px',
-                        padding: '10px 20px',
-                        backgroundColor: '#28A745',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '5px',
-                    }}
-                >
-                    Toggle Theme
-                </button>
-            </div>
+  const handleClearCache = () => {
+    // Add your cache clearing logic here
+    alert('Site cache cleared!');
+  };
+
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{
+        background: theme.background,
+        color: theme.color,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <div className="w-full max-w-md rounded-xl shadow-md p-8" style={{ background: theme.infoBoxBackground }}>
+        <h2 className="text-2xl font-bold mb-6 text-center">Site Settings</h2>
+        <div className="space-y-4">
+          <button
+            onClick={handleThemeToggle}
+            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold transition-colors"
+          >
+            Toggle Theme
+          </button>
+          <button
+            onClick={handleClearCache}
+            className="w-full py-2 bg-red-500 hover:bg-red-600 text-white rounded font-semibold transition-colors"
+          >
+            Clear Site Cache
+          </button>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default Settings;
