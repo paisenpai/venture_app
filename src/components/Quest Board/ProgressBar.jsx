@@ -9,6 +9,7 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
+
 function ProgressBar({ value, maxValue }) {
     const percentage = (value / maxValue) * 100;
 

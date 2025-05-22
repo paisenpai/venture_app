@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
+import Sidebar from '../components/Sidebar/Sidebar';
 
 const MainLayout = () => (
   <div className="flex min-h-screen w-full bg-gray-100">

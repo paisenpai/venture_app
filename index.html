@@ -8,24 +8,38 @@
     <meta name="theme-color" content="#7c3aed" />
     <meta name="author" content="Your Name or Company" />
     <meta name="keywords" content="task manager, productivity, gamification, Venture app" />
-    <link rel="icon" href="Logo.svg" />
+    <link rel="icon" href="/Logo.svg" />
     <title>Venture | Gamified Task Manager</title>
+
+    <!-- Google Fonts: Inter (optional, fallback) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Tailwind CSS (remove CDN if using local build) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/src/index.css" />
 
     <style>
         :root {
             --accent-color: #7c3aed;
         }
 
+        @font-face {
+            font-family: 'Typold';
+            src: url('/fonts/Typold.woff2') format('woff2'),
+                url('/fonts/Typold.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Typold', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             padding: 0;
-            margin-left: 0;
-            margin-right: 0;
+            margin: 0;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet" />
-    <!-- Tailwind CSS CDN for utility classes (remove if using local build) -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
 
 <body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white transition-colors">
