@@ -1,17 +1,21 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import QuestBoard from "../components/quest/QuestBoard";
 import useLevelSystem from "../features/leveling/useLevelSystem";
-import SettingsDots from "../assets/icons/SettingsDots.png";
+import SettingsMenu from "../components/quest/SettingsMenu"; // Import the SettingsMenu component
 import { getThemeClass } from "../utils/themeUtils";
 import { filterQuestsByStatus } from "../utils/QuestBoard/questFilters";
+import useQuestHandlers from "../hooks/useQuestHandlers";
+import SubtaskList from "../components/quest/SubtaskList";
+import QuestCalendarView from "../components/quest/QuestCalendar";
 
 const Quests = () => {
     const navigate = useNavigate();
     const { level, addXP } = useLevelSystem();
     const [showMenu, setShowMenu] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
-    const [quests, setQuests] = useState([
+    const [viewMode, setViewMode] = useState("board");
+    const initialQuests = [
         {
             id: 1,
             name: "Quest 1",
@@ -28,100 +32,18 @@ const Quests = () => {
                 { id: 2, name: "Subtask 2", progress: 0 },
             ],
         },
-    ]);
-    const menuRef = useRef(null);
+    ];
 
-    const handleNavigate = (questId) => navigate(`/quests/${questId}`);
-
-    const handleDeleteQuest = (id) => {
-        setQuests((prev) => prev.filter((quest) => quest.id !== id));
-    };
-
-    const handleEditQuest = (id, updatedQuest) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === id
-                    ? { ...quest, ...updatedQuest, subtasks: updatedQuest.subtasks || [] }
-                    : quest
-            )
-        );
-    };
-
-    const handleChangeStatus = (id, status) => {
-        setQuests((prev) =>
-            prev.map((quest) => (quest.id === id ? { ...quest, status } : quest))
-        );
-    };
-
-    const handleAddQuest = (newQuest) => {
-        setQuests((prev) => [
-            ...prev,
-            {
-                ...newQuest,
-                id: prev.length + 1,
-                subtasks: [],
-                progress: 0,
-                level: 1,
-                status: "available",
-            },
-        ]);
-    };
-
-    const handleEditSubtask = (questId, subtaskId, updatedSubtask) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: quest.subtasks.map((subtask) =>
-                              subtask.id === subtaskId ? { ...subtask, ...updatedSubtask } : subtask
-                          ),
-                      }
-                    : quest
-            )
-        );
-    };
-
-    const handleAddSubtask = (questId, newSubtask) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: [
-                              ...quest.subtasks,
-                              { ...newSubtask, id: quest.subtasks.length + 1 },
-                          ],
-                      }
-                    : quest
-            )
-        );
-    };
-
-    const handleDeleteSubtask = (questId, subtaskId) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: quest.subtasks.filter((subtask) => subtask.id !== subtaskId),
-                      }
-                    : quest
-            )
-        );
-    };
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setShowMenu(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
+    const {
+        quests,
+        handleAddQuest,
+        handleEditQuest,
+        handleDeleteQuest,
+        handleChangeStatus,
+        handleAddSubtask,
+        handleEditSubtask,
+        handleDeleteSubtask,
+    } = useQuestHandlers(initialQuests);
 
     // Separate quests by status using the utility function
     const availableQuests = filterQuestsByStatus(quests, "available");
@@ -161,231 +83,229 @@ const Quests = () => {
         <div className={`flex h-screen ${themeClass}`}>
             <div className="flex-1 flex flex-col min-h-0">
                 <div className="flex-1 min-h-0 overflow-y-auto">
-                    <div className="flex flex-col h-full min-h-0 px-10 pt-10 pb-10 gap-6">
-                        {/* 1st row: Title */}
-                        <div className="flex flex-wrap justify-between items-center min-w-0 pb-4 relative">
-                            <h1 className="truncate text-5xl font-extrabold font-['Typold'] max-w-full">
-                                Quest Board
-                            </h1>
-                            <div className="relative" ref={menuRef}>
-                                <button
-                                    className="w-10 h-10 flex-shrink-0 focus:outline-none"
-                                    onClick={() => setShowMenu((prev) => !prev)}
-                                    aria-label="Quest Board Settings"
-                                    aria-expanded={showMenu}
-                                    tabIndex={0}
-                                >
-                                    <img
-                                        className="w-10 h-10"
-                                        src={SettingsDots}
-                                        alt="Quest Board Settings Icon"
-                                    />
-                                </button>
-                                {showMenu && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50 text-black">
-                                        {/* Toggle Dark Mode */}
-                                        <button
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                                            onClick={() => {
-                                                setDarkMode((prev) => !prev);
-                                                setShowMenu(false);
-                                            }}
-                                        >
-                                            {darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                                        </button>
-                                        {/* View Quest List */}
-                                        <button
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                                            onClick={() => {
-                                                navigate("/quests/list");
-                                                setShowMenu(false);
-                                            }}
-                                        >
-                                            View Quest List
-                                        </button>
-                                        {/* View Quest Calendar */}
-                                        <button
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                                            onClick={() => {
-                                                navigate("/quests/calendar");
-                                                setShowMenu(false);
-                                            }}
-                                        >
-                                            View Quest Calendar
-                                        </button>
-                                    </div>
-                                )}
+                    {viewMode === "board" && (
+                        <div className="flex flex-col h-full min-h-0 px-10 pt-10 pb-10 gap-6">
+                            {/* Board View Content */}
+                            {/* 1st row: Title */}
+                            <div className="flex flex-wrap justify-between items-center min-w-0 pb-4 relative">
+                                <h1 className="truncate text-5xl font-extrabold font-['Typold'] max-w-full">
+                                    Quest Board
+                                </h1>
+                                {/* Use the SettingsMenu component */}
+                                <SettingsMenu
+                                    showMenu={showMenu}
+                                    setShowMenu={setShowMenu}
+                                    darkMode={darkMode}
+                                    setDarkMode={setDarkMode}
+                                    viewMode={viewMode}
+                                    setViewMode={setViewMode}
+                                />
                             </div>
-                        </div>
 
-                        {/* Available Quests */}
-                        <SectionHeader
-                            title="Available"
-                            count={availableQuests.length}
-                            bgColor="bg-indigo-900"
-                            textColor="text-indigo-900"
-                        />
-                        <div className="flex flex-row flex-wrap gap-4">
-                            <QuestBoard type="add" onAddQuest={handleAddQuest} />
-                            {availableQuests.map((quest) => (
-                                <div key={quest.id} className="flex flex-col">
-                                    <QuestBoard
-                                        {...quest}
-                                        onDeleteQuest={() => handleDeleteQuest(quest.id)}
-                                        onEditQuest={(updatedQuest) =>
-                                            handleEditQuest(quest.id, updatedQuest)
-                                        }
-                                        onChangeStatus={(status) =>
-                                            handleChangeStatus(quest.id, status)
-                                        }
-                                        onAddSubtask={(newSubtask) =>
-                                            handleAddSubtask(quest.id, newSubtask)
-                                        }
-                                        onEditSubtask={(subtaskId, updatedSubtask) =>
-                                            handleEditSubtask(quest.id, subtaskId, updatedSubtask)
-                                        }
-                                        onDeleteSubtask={(subtaskId) =>
-                                            handleDeleteSubtask(quest.id, subtaskId)
-                                        }
-                                    />
-                                    {/* Render Subtasks */}
-                                    <div className="flex flex-row flex-wrap gap-4 mt-4">
-                                        {quest.subtasks.map((subtask) => (
+                            {/* Available Quests */}
+                            <SectionHeader
+                                title="Available"
+                                count={availableQuests.length}
+                                bgColor="bg-indigo-900"
+                                textColor="text-indigo-900"
+                            />
+                            <div className="flex flex-row flex-wrap gap-4">
+                                <QuestBoard type="add" onAddQuest={handleAddQuest} />
+                                {availableQuests.map((quest) => (
+                                    <div key={quest.id} className="flex flex-col">
+                                        <QuestBoard
+                                            {...quest}
+                                            onDeleteQuest={() => handleDeleteQuest(quest.id)}
+                                            onEditQuest={(updatedQuest) =>
+                                                handleEditQuest(quest.id, updatedQuest)
+                                            }
+                                            onChangeStatus={(status) =>
+                                                handleChangeStatus(quest.id, status)
+                                            }
+                                            onAddSubtask={(newSubtask) =>
+                                                handleAddSubtask(quest.id, newSubtask)
+                                            }
+                                        />
+                                        {/* Render Subtasks */}
+                                        <SubtaskList
+                                            questId={quest.id}
+                                            subtasks={quest.subtasks}
+                                            onEditSubtask={handleEditSubtask}
+                                            onDeleteSubtask={handleDeleteSubtask}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Ongoing Quests */}
+                            <SectionHeader
+                                title="Ongoing"
+                                count={ongoingQuests.length}
+                                bgColor="bg-indigo-900"
+                                textColor="text-indigo-900"
+                            />
+                            {ongoingQuests.length === 0 ? (
+                                <p className="text-gray-500">No ongoing quests available.</p>
+                            ) : (
+                                <div className="flex flex-row flex-wrap gap-4">
+                                    {ongoingQuests.map((quest) => (
+                                        <div key={quest.id} className="flex flex-col">
                                             <QuestBoard
-                                                key={subtask.id}
-                                                type="subtask"
-                                                {...subtask}
-                                                onEditQuest={(updatedSubtask) =>
-                                                    handleEditSubtask(
-                                                        quest.id,
-                                                        subtask.id,
-                                                        updatedSubtask
-                                                    )
+                                                {...quest}
+                                                onDeleteQuest={() => handleDeleteQuest(quest.id)}
+                                                onEditQuest={(updatedQuest) =>
+                                                    handleEditQuest(quest.id, updatedQuest)
                                                 }
-                                                onDeleteQuest={() =>
-                                                    handleDeleteSubtask(quest.id, subtask.id)
+                                                onChangeStatus={(status) =>
+                                                    handleChangeStatus(quest.id, status)
+                                                }
+                                                onAddSubtask={(newSubtask) =>
+                                                    handleAddSubtask(quest.id, newSubtask)
                                                 }
                                             />
-                                        ))}
-                                    </div>
+                                            {/* Render Subtasks */}
+                                            <SubtaskList
+                                                questId={quest.id}
+                                                subtasks={quest.subtasks}
+                                                onEditSubtask={handleEditSubtask}
+                                                onDeleteSubtask={handleDeleteSubtask}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
+
+                            {/* Completed Quests */}
+                            <SectionHeader
+                                title="Completed"
+                                count={completedQuestsList.length}
+                                bgColor="bg-indigo-900"
+                                textColor="text-indigo-900"
+                            />
+                            {completedQuestsList.length === 0 ? (
+                                <p className="text-gray-500">No completed quests available.</p>
+                            ) : (
+                                <div className="flex flex-row flex-wrap gap-4">
+                                    {completedQuestsList.map((quest) => (
+                                        <div key={quest.id} className="flex flex-col">
+                                            <QuestBoard
+                                                {...quest}
+                                                onDeleteQuest={() => handleDeleteQuest(quest.id)}
+                                                onEditQuest={(updatedQuest) =>
+                                                    handleEditQuest(quest.id, updatedQuest)
+                                                }
+                                                onChangeStatus={(status) =>
+                                                    handleChangeStatus(quest.id, status)
+                                                }
+                                                onAddSubtask={(newSubtask) =>
+                                                    handleAddSubtask(quest.id, newSubtask)
+                                                }
+                                            />
+                                            {/* Render Subtasks */}
+                                            <SubtaskList
+                                                questId={quest.id}
+                                                subtasks={quest.subtasks}
+                                                onEditSubtask={handleEditSubtask}
+                                                onDeleteSubtask={handleDeleteSubtask}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+                    )}
+                    {viewMode === "list" && (
+                        <div className="flex flex-col h-full min-h-0 px-10 pt-10 pb-10 gap-6">
+                            {/* List View Content */}
+                            {/* 1st row: Title */}
+                            <div className="flex flex-wrap justify-between items-center min-w-0 pb-4 relative">
+                                <h1 className="truncate text-5xl font-extrabold font-['Typold'] max-w-full">
+                                    Quest List
+                                </h1>
+                                {/* Use the SettingsMenu component */}
+                                <SettingsMenu
+                                    showMenu={showMenu}
+                                    setShowMenu={setShowMenu}
+                                    darkMode={darkMode}
+                                    setDarkMode={setDarkMode}
+                                    viewMode={viewMode}
+                                    setViewMode={setViewMode}
+                                />
+                            </div>
 
-                        {/* Ongoing Quests */}
-                        <SectionHeader
-                            title="Ongoing"
-                            count={ongoingQuests.length}
-                            bgColor="bg-indigo-900"
-                            textColor="text-indigo-900"
-                        />
-                        {ongoingQuests.length === 0 ? (
-                            <p className="text-gray-500">No ongoing quests available.</p>
-                        ) : (
-                            <div className="flex flex-row flex-wrap gap-4">
-                                {ongoingQuests.map((quest) => (
-                                    <div key={quest.id} className="flex flex-col">
-                                        <QuestBoard
-                                            {...quest}
-                                            onDeleteQuest={() => handleDeleteQuest(quest.id)}
-                                            onEditQuest={(updatedQuest) =>
-                                                handleEditQuest(quest.id, updatedQuest)
-                                            }
-                                            onChangeStatus={(status) =>
-                                                handleChangeStatus(quest.id, status)
-                                            }
-                                            onAddSubtask={(newSubtask) =>
-                                                handleAddSubtask(quest.id, newSubtask)
-                                            }
-                                            onEditSubtask={(subtaskId, updatedSubtask) =>
-                                                handleEditSubtask(quest.id, subtaskId, updatedSubtask)
-                                            }
-                                            onDeleteSubtask={(subtaskId) =>
-                                                handleDeleteSubtask(quest.id, subtaskId)
-                                            }
-                                        />
-                                        {/* Render Subtasks */}
-                                        <div className="flex flex-row flex-wrap gap-4 mt-4">
-                                            {quest.subtasks.map((subtask) => (
-                                                <QuestBoard
-                                                    key={subtask.id}
-                                                    type="subtask"
-                                                    {...subtask}
-                                                    onEditQuest={(updatedSubtask) =>
-                                                        handleEditSubtask(
-                                                            quest.id,
-                                                            subtask.id,
-                                                            updatedSubtask
-                                                        )
-                                                    }
-                                                    onDeleteQuest={() =>
-                                                        handleDeleteSubtask(quest.id, subtask.id)
-                                                    }
-                                                />
-                                            ))}
+                            {/* Quest Items */}
+                            <div className="flex flex-col gap-4">
+                                {quests.map((quest) => (
+                                    <div key={quest.id} className="bg-white rounded-lg shadow-md p-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <h3 className="text-xl font-semibold">{quest.name}</h3>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleEditQuest(quest.id)}
+                                                    className="text-blue-500 hover:underline"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteQuest(quest.id)}
+                                                    className="text-red-500 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-700 mb-2">{quest.goal}</p>
+                                        <div className="flex flex-wrap gap-2">
+                                            <span className="text-sm bg-gray-200 rounded-full px-3 py-1">
+                                                {quest.category}
+                                            </span>
+                                            <span className="text-sm bg-gray-200 rounded-full px-3 py-1">
+                                                Due: {quest.dueDate}
+                                            </span>
+                                            <span className="text-sm bg-gray-200 rounded-full px-3 py-1">
+                                                XP: {quest.xp}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleChangeStatus(quest.id, "ongoing")}
+                                                className="flex-1 bg-indigo-600 text-white rounded-lg px-4 py-2 shadow-md hover:bg-indigo-700 transition"
+                                            >
+                                                Start Quest
+                                            </button>
+                                            <button
+                                                onClick={() => handleAddSubtask(quest.id)}
+                                                className="flex-1 bg-green-600 text-white rounded-lg px-4 py-2 shadow-md hover:bg-green-700 transition"
+                                            >
+                                                Add Subtask
+                                            </button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-                        )}
-
-                        {/* Completed Quests */}
-                        <SectionHeader
-                            title="Completed"
-                            count={completedQuestsList.length}
-                            bgColor="bg-indigo-900"
-                            textColor="text-indigo-900"
-                        />
-                        {completedQuestsList.length === 0 ? (
-                            <p className="text-gray-500">No completed quests available.</p>
-                        ) : (
-                            <div className="flex flex-row flex-wrap gap-4">
-                                {completedQuestsList.map((quest) => (
-                                    <div key={quest.id} className="flex flex-col">
-                                        <QuestBoard
-                                            {...quest}
-                                            onDeleteQuest={() => handleDeleteQuest(quest.id)}
-                                            onEditQuest={(updatedQuest) =>
-                                                handleEditQuest(quest.id, updatedQuest)
-                                            }
-                                            onChangeStatus={(status) =>
-                                                handleChangeStatus(quest.id, status)
-                                            }
-                                            onAddSubtask={(newSubtask) =>
-                                                handleAddSubtask(quest.id, newSubtask)
-                                            }
-                                            onEditSubtask={(subtaskId, updatedSubtask) =>
-                                                handleEditSubtask(quest.id, subtaskId, updatedSubtask)
-                                            }
-                                            onDeleteSubtask={(subtaskId) =>
-                                                handleDeleteSubtask(quest.id, subtaskId)
-                                            }
-                                        />
-                                        {/* Render Subtasks */}
-                                        <div className="flex flex-row flex-wrap gap-4 mt-4">
-                                            {quest.subtasks.map((subtask) => (
-                                                <QuestBoard
-                                                    key={subtask.id}
-                                                    type="subtask"
-                                                    {...subtask}
-                                                    onEditQuest={(updatedSubtask) =>
-                                                        handleEditSubtask(
-                                                            quest.id,
-                                                            subtask.id,
-                                                            updatedSubtask
-                                                        )
-                                                    }
-                                                    onDeleteQuest={() =>
-                                                        handleDeleteSubtask(quest.id, subtask.id)
-                                                    }
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
+                        </div>
+                    )}
+                    {viewMode === "calendar" && (
+                        <div className="flex flex-col h-full min-h-0 px-10 pt-10 pb-10 gap-6">
+                            {/* Title and Settings */}
+                            <div className="flex flex-wrap justify-between items-center min-w-0 pb-4 relative">
+                                <h1 className="truncate text-5xl font-extrabold font-['Typold'] max-w-full">
+                                    Quest Calendar
+                                </h1>
+                                <SettingsMenu
+                                    showMenu={showMenu}
+                                    setShowMenu={setShowMenu}
+                                    darkMode={darkMode}
+                                    setDarkMode={setDarkMode}
+                                    viewMode={viewMode}
+                                    setViewMode={setViewMode}
+                                />
                             </div>
-                        )}
-                    </div>
+
+                            {/* Calendar View */}
+                            <QuestCalendarView quests={quests} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
