@@ -1,15 +1,15 @@
-import { Routes, Route } from 'react-router-dom';
-import MainLayout from '../layouts/MainLayout';
-import AuthLayout from '../layouts/AuthLayout';
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "../layouts/MainLayout";
+import AuthLayout from "../layouts/AuthLayout";
 
-import Dashboard from '../pages/Dashboard';
-import Quests from '../pages/Quests';
-import Achievements from '../pages/Achievements';
-import Progress from '../pages/Progress';
-import Character from '../pages/Character';
-import Settings from '../pages/Settings';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
+import Dashboard from "../pages/Dashboard";
+import Quests from "../pages/Quests";
+import Achievements from "../pages/Achievements";
+import Progress from "../pages/Progress";
+import Character from "../pages/Character";
+import Settings from "../pages/Settings";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
 
 function AppRoutes() {
   return (
@@ -22,7 +22,7 @@ function AppRoutes() {
 
       {/* Main app routes with sidebar */}
       <Route element={<MainLayout />}>
-        <Route index element={<Dashboard />} />
+        <Route path="/" element={<Dashboard />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="quests" element={<Quests />} />
         <Route path="achievements" element={<Achievements />} />
@@ -30,6 +30,9 @@ function AppRoutes() {
         <Route path="character" element={<Character />} />
         <Route path="settings" element={<Settings />} />
       </Route>
+
+      {/* Fallback route for undefined paths */}
+      <Route path="*" element={<div>404 - Page Not Found</div>} />
     </Routes>
   );
 }

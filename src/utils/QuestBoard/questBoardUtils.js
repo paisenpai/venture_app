@@ -19,3 +19,7 @@ export const daysLeftBgColors = {
     red: "#8D1616",
     yellow: "#CAA004",
 };
+
+export const getThemeClass = (darkMode) => {
+    return darkMode ? "bg-black text-white" : "bg-gray-50 text-indigo-900";
+};

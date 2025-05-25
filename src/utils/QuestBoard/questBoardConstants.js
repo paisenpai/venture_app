@@ -8,10 +8,3 @@ export const categoryColors = {
     Hobby: "bg-pink-200 text-pink-700",
     Other: "bg-gray-200 text-gray-700",
 };
-
-export const daysLeftBgColors = {
-    blue: "#163A8D",
-    purple: "#1F168D",
-    red: "#8D1616",
-    yellow: "#CAA004",
-};

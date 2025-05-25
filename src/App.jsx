@@ -55,6 +55,10 @@ const AppContent = () => {
             {/* Authentication Pages */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+
+            {/* Quest Management Pages */}
+            <Route path="/quests/list" element={<QuestList />} />
+            <Route path="/quests/calendar" element={<QuestCalendar />} />
           </Routes>
         </div>
       </div>

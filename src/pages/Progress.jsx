@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProgressBar from '../components/Quest Board/ProgressBar';
+import ProgressBar from '../components/progress/ProgressBar';
 import useProgressStats from '../features/Progress/useProgressStats';
 
 // Example character stats (replace with real data if available)
