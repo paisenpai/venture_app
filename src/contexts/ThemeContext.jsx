@@ -3,43 +3,51 @@
 // which provides theme management for the application.
 // It allows toggling between light and dark themes.
 
-import { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-export const ThemeContext = createContext();
-export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState(() => {
-        try {
-            const storedTheme = localStorage.getItem('theme');
-            return storedTheme === 'dark' ? 'dark' : 'light';
-        } catch {
-            return 'light'; // Default to light theme if localStorage fails
-        }
-    });
+// Create theme context
+export const ThemeContext = createContext({
+  theme: "light",
+  toggleTheme: () => {},
+});
 
-    // Update localStorage whenever the theme changes
-    useEffect(() => {
-        try {
-            localStorage.setItem('theme', theme);
-        } catch (error) {
-            console.error('Failed to save theme to localStorage:', error);
-        }
-    }, [theme]);
-
-    // Function to toggle between light and dark themes
-    const toggleTheme = () => {
-        setTheme((prevTheme) => (prevTheme === 'light' ? 'dark' : 'light'));
-    };
-
-    return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
-            <div className={theme}>
-                {children}
-            </div>
-        </ThemeContext.Provider>
-    );
+// Custom hook for using the theme context
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error("useTheme must be used within a ThemeProvider");
+  }
+  return context;
 };
 
-// Custom hook to use ThemeContext
-export const useTheme = () => {
-    return useContext(ThemeContext);
+// Theme provider component
+export const ThemeProvider = ({ children }) => {
+  // Check if user has a theme preference stored in localStorage
+  // Default to 'light' if nothing is found
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem("theme");
+    return savedTheme || "light";
+  });
+
+  // Effect to update localStorage when theme changes
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+    // Apply theme class to the document body
+    document.body.className = theme;
+  }, [theme]);
+
+  // Function to toggle between light and dark themes
+  const toggleTheme = () => {
+    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+  };
+
+  // Provide theme values to children
+  const value = {
+    theme,
+    toggleTheme,
+  };
+
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
 };

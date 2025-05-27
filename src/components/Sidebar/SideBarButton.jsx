@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import dashboardIcon from '../../assets/icons/Dashboard.svg';
-import questIcon from '../../assets/icons/Quest.svg';
-import achievementsIcon from '../../assets/icons/Achievements.svg';
-import progressIcon from '../../assets/icons/Progress.svg';
-import characterIcon from '../../assets/icons/Character.svg';
-import settingsIcon from '../../assets/icons/Settings.svg';
+import React from "react";
+import PropTypes from "prop-types";
+import dashboardIcon from "../../assets/icons/Dashboard.svg";
+import questIcon from "../../assets/icons/Quest.svg";
+import achievementsIcon from "../../assets/icons/Achievements.svg";
+import progressIcon from "../../assets/icons/Progress.svg";
+import characterIcon from "../../assets/icons/Character.svg";
+import settingsIcon from "../../assets/icons/Settings.svg";
 
 const iconMap = {
   settings: settingsIcon,
@@ -22,7 +22,7 @@ const SideBarButton = React.memo(function SideBarButton({
   selected,
   showText,
   onClick,
-  className = '',
+  className = "",
 }) {
   const iconSrc = iconMap[type];
 
@@ -36,19 +36,23 @@ const SideBarButton = React.memo(function SideBarButton({
         data-show-text={showText ? "true" : "false"}
         type="button"
         style={{
-          minWidth: showText ? '15rem' : '5rem',
-          minHeight: '5rem',
-          maxWidth: '100%',
-          maxHeight: '100%',
+          minWidth: showText ? "15rem" : "5rem",
+          minHeight: "5rem",
+          maxWidth: "100%",
+          maxHeight: "100%",
         }}
         tabIndex={0}
       >
         <div
-          className={`p-5 ${showText ? 'pl-10' : 'justify-center'} bg-stone-50 rounded-full shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex items-center gap-5 flex-wrap content-center w-full ${selected ? 'shadow-2xl' : ''}`}
+          className={`p-5 ${
+            showText ? "pl-10" : "justify-center"
+          } bg-stone-50 rounded-full shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] inline-flex items-center gap-5 flex-wrap content-center w-full ${
+            selected ? "shadow-2xl" : ""
+          }`}
           style={{
-            background: selected ? '#F9F8F8' : undefined,
-            width: '100%',
-            boxSizing: 'border-box',
+            background: selected ? "#F9F8F8" : undefined,
+            width: "100%",
+            boxSizing: "border-box",
           }}
         >
           {/* Icon */}
@@ -58,7 +62,7 @@ const SideBarButton = React.memo(function SideBarButton({
                 src={iconSrc}
                 alt={`${label} icon`}
                 className="w-12 h-12 shadow-[1px_1px_2px_0px_rgba(31,22,141,0.50)]"
-                style={{ maxWidth: '100%', maxHeight: '100%' }}
+                style={{ maxWidth: "100%", maxHeight: "100%" }}
                 loading="lazy"
               />
             )}
@@ -66,7 +70,7 @@ const SideBarButton = React.memo(function SideBarButton({
           {/* Label */}
           {showText && (
             <div className="flex-1 flex items-center min-w-0">
-              <span className="text-indigo-900 text-2xl font-bold font-['Typold'] text-left truncate">
+              <span className="text-indigo-900 text-2xl font-bold text-left truncate">
                 {label}
               </span>
             </div>

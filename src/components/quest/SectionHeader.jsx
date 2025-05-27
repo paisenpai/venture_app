@@ -1,23 +1,31 @@
-const SectionHeader = ({ title, count, bgColor, textColor }) => (
-    <div className="flex items-center gap-3 mb-6">
-        <div
-            className={`w-8 h-8 ${bgColor} rounded-full shadow-md flex justify-center items-center`}
-            aria-label={`Section count: ${count}`}
-        >
-            <span className="text-white text-xl font-bold font-['Typold']">
-                {count}
-            </span>
-        </div>
-        <h2
-            className={`text-3xl font-bold font-['Typold'] ${textColor}`}
-            aria-label={`Section title: ${title}`}
-        >
-            {title}
-        </h2>
-        <div className="flex-1">
-            <hr className="border-t border-gray-300" />
-        </div>
+import React from "react";
+import PropTypes from "prop-types";
+
+const SectionHeader = ({ title, count, bgColor, textColor }) => {
+  return (
+    <div className="flex items-center mb-2 sm:mb-3">
+      <h2 className={`text-lg sm:text-xl md:text-2xl font-bold ${textColor}`}>
+        {title}
+      </h2>
+      <div
+        className={`ml-2 px-1.5 sm:px-2 py-0.5 rounded-full ${bgColor} text-white text-xs sm:text-sm font-medium`}
+      >
+        {count}
+      </div>
     </div>
-);
+  );
+};
+
+SectionHeader.propTypes = {
+  title: PropTypes.string.isRequired,
+  count: PropTypes.number.isRequired,
+  bgColor: PropTypes.string,
+  textColor: PropTypes.string,
+};
+
+SectionHeader.defaultProps = {
+  bgColor: "bg-indigo-900",
+  textColor: "text-indigo-900",
+};
 
 export default SectionHeader;

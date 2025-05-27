@@ -1,97 +1,171 @@
+// Improve equality checks and status change function
+
 import { useState } from "react";
 
-const useQuestHandlers = (initialQuests) => {
-    const [quests, setQuests] = useState(initialQuests);
+const useQuestHandlers = (initialQuests = []) => {
+  const [quests, setQuests] = useState(initialQuests);
 
-    const handleAddQuest = (newQuest) => {
-        setQuests((prev) => [
-            ...prev,
-            {
-                ...newQuest,
-                id: prev.length + 1,
-                subtasks: [],
-                progress: 0,
-                level: 1,
-                status: "available",
-            },
-        ]);
-    };
+  // Generate a new unique ID for quests or subtasks
+  const generateId = (items) => {
+    const maxId =
+      items.length > 0
+        ? Math.max(...items.map((item) => parseInt(item.id)))
+        : 0;
+    return maxId + 1;
+  };
 
-    const handleEditQuest = (id, updatedQuest) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === id
-                    ? { ...quest, ...updatedQuest, subtasks: updatedQuest.subtasks || [] }
-                    : quest
-            )
-        );
+  // Add a new quest
+  const handleAddQuest = (newQuest) => {
+    const questWithId = {
+      ...newQuest,
+      id: generateId(quests),
+      subtasks: newQuest.subtasks || [],
     };
+    setQuests([...quests, questWithId]);
+    return questWithId;
+  };
 
-    const handleDeleteQuest = (id) => {
-        setQuests((prev) => prev.filter((quest) => quest.id !== id));
-    };
+  // Edit an existing quest
+  const handleEditQuest = (questId, updatedQuest) => {
+    setQuests(
+      quests.map((quest) =>
+        quest.id === questId ? { ...quest, ...updatedQuest } : quest
+      )
+    );
+  };
 
-    const handleChangeStatus = (id, status) => {
-        setQuests((prev) =>
-            prev.map((quest) => (quest.id === id ? { ...quest, status } : quest))
-        );
-    };
+  // Delete a quest
+  const handleDeleteQuest = (questId) => {
+    setQuests(quests.filter((quest) => quest.id !== questId));
+  };
 
-    const handleAddSubtask = (questId, newSubtask) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: [
-                              ...quest.subtasks,
-                              { ...newSubtask, id: quest.subtasks.length + 1 },
-                          ],
-                      }
-                    : quest
-            )
-        );
-    };
+  // Change a quest's status
+  const handleChangeStatus = (questId, newStatus) => {
+    setQuests(
+      quests.map((quest) =>
+        quest.id === questId ? { ...quest, status: newStatus } : quest
+      )
+    );
+  };
 
-    const handleEditSubtask = (questId, subtaskId, updatedSubtask) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: quest.subtasks.map((subtask) =>
-                              subtask.id === subtaskId ? { ...subtask, ...updatedSubtask } : subtask
-                          ),
-                      }
-                    : quest
-            )
-        );
-    };
+  // Add a subtask to a quest
+  const handleAddSubtask = (questId, newSubtask) => {
+    setQuests(
+      quests.map((quest) => {
+        if (quest.id === questId) {
+          const subtasks = quest.subtasks || [];
+          const subtaskWithId = {
+            ...newSubtask,
+            id: generateId(subtasks),
+          };
+          return {
+            ...quest,
+            subtasks: [...subtasks, subtaskWithId],
+          };
+        }
+        return quest;
+      })
+    );
+  };
 
-    const handleDeleteSubtask = (questId, subtaskId) => {
-        setQuests((prev) =>
-            prev.map((quest) =>
-                quest.id === questId
-                    ? {
-                          ...quest,
-                          subtasks: quest.subtasks.filter((subtask) => subtask.id !== subtaskId),
-                      }
-                    : quest
-            )
-        );
-    };
+  // Edit a subtask
+  const handleEditSubtask = (questId, subtaskId, updatedSubtask) => {
+    setQuests(
+      quests.map((quest) => {
+        if (quest.id === questId) {
+          return {
+            ...quest,
+            subtasks: (quest.subtasks || []).map((subtask) =>
+              subtask.id === subtaskId
+                ? { ...subtask, ...updatedSubtask }
+                : subtask
+            ),
+          };
+        }
+        return quest;
+      })
+    );
+  };
 
-    return {
-        quests,
-        setQuests,
-        handleAddQuest,
-        handleEditQuest,
-        handleDeleteQuest,
-        handleChangeStatus,
-        handleAddSubtask,
-        handleEditSubtask,
-        handleDeleteSubtask,
-    };
+  // Delete a subtask
+  const handleDeleteSubtask = (questId, subtaskId) => {
+    setQuests(
+      quests.map((quest) => {
+        if (quest.id === questId) {
+          return {
+            ...quest,
+            subtasks: (quest.subtasks || []).filter(
+              (subtask) => subtask.id !== subtaskId
+            ),
+          };
+        }
+        return quest;
+      })
+    );
+  };
+
+  // Change a subtask's status
+  const handleChangeSubtaskStatus = (questId, subtaskId, newStatus) => {
+    setQuests(
+      quests.map((quest) => {
+        if (quest.id === questId) {
+          return {
+            ...quest,
+            subtasks: (quest.subtasks || []).map((subtask) =>
+              subtask.id === subtaskId
+                ? {
+                    ...subtask,
+                    status: newStatus,
+                    progress:
+                      newStatus === "completed" ? 100 : subtask.progress,
+                  }
+                : subtask
+            ),
+          };
+        }
+        return quest;
+      })
+    );
+    // Update main quest progress after updating subtask
+    updateQuestProgress(questId);
+  };
+
+  // Update quest progress based on subtasks
+  const updateQuestProgress = (questId) => {
+    setQuests(
+      quests.map((quest) => {
+        if (quest.id === questId && quest.subtasks?.length > 0) {
+          const totalSubtasks = quest.subtasks.length;
+          const completedSubtasks = quest.subtasks.filter(
+            (subtask) => subtask.progress === 100
+          ).length;
+
+          const progress = Math.round(
+            (completedSubtasks / totalSubtasks) * 100
+          );
+
+          return {
+            ...quest,
+            progress,
+          };
+        }
+        return quest;
+      })
+    );
+  };
+
+  return {
+    quests,
+    handleAddQuest,
+    handleEditQuest,
+    handleDeleteQuest,
+    handleChangeStatus,
+    handleAddSubtask,
+    handleEditSubtask,
+    handleDeleteSubtask,
+    handleChangeSubtaskStatus,
+    updateQuestProgress,
+  };
 };
 
 export default useQuestHandlers;

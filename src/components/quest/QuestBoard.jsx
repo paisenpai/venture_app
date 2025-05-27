@@ -1,487 +1,423 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { categoryColors } from "../../utils/QuestBoard/questBoardConstants";
-import SwordShieldIcon from "../../assets/icons/SwordShield.png";
+import SwordShieldIcon from "../../assets/icons/SwordShield.png"; // Import the SwordShield image
 
-// --- AddQuestForm Component ---
-const AddQuestForm = ({ onSubmit, onClose, initialData = {}, isSubtask = false }) => {
-    // Merge initialData with default values to ensure all fields are defined
-    const [formData, setFormData] = useState({
-        name: initialData.name || "",
-        category: initialData.category || "Other",
-        goal: initialData.goal || "",
-        dueDate: initialData.dueDate || "",
-        xp: initialData.xp || 0,
-        daysLeft: initialData.daysLeft || 0,
-        priority: initialData.priority || 1,
-        status: initialData.status || "available",
-        subtasks: initialData.subtasks || [], // Ensure subtasks is always an array
-        progress: initialData.progress || 0, // Progress for the EXP bar
-    });
-
-    const [subtask, setSubtask] = useState(""); // State for the current subtask input
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        // Automatically calculate daysLeft when dueDate changes
-        if (name === "dueDate") {
-            const currentDate = new Date();
-            const selectedDate = new Date(value);
-            const timeDifference = selectedDate - currentDate;
-            const calculatedDaysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24)); // Convert milliseconds to days
-
-            setFormData((prev) => ({
-                ...prev,
-                [name]: value,
-                daysLeft: calculatedDaysLeft > 0 ? calculatedDaysLeft : 0, // Ensure daysLeft is not negative
-            }));
-        } else {
-            setFormData((prev) => ({ ...prev, [name]: value }));
-        }
-    };
-
-    const handleAddSubtask = () => {
-        if (subtask.trim()) {
-            setFormData((prev) => ({
-                ...prev,
-                subtasks: [...prev.subtasks, subtask], // Add the new subtask to the array
-            }));
-            setSubtask(""); // Clear the subtask input
-        }
-    };
-
-    const handleRemoveSubtask = (index) => {
-        setFormData((prev) => ({
-            ...prev,
-            subtasks: prev.subtasks.filter((_, i) => i !== index), // Remove the subtask at the specified index
-        }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
-        onClose();
-    };
-
-    const handleProgressChange = (e) => {
-        const progress = Math.min(Math.max(Number(e.target.value), 0), 100); // Clamp progress between 0 and 100
-        setFormData((prev) => ({ ...prev, progress }));
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-96">
-                <h2 className="text-xl font-bold mb-4">
-                    {initialData.name ? (isSubtask ? "Edit Subtask" : "Edit Quest") : isSubtask ? "Add New Subtask" : "Add New Quest"}
-                </h2>
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                    <input
-                        type="text"
-                        name="name"
-                        placeholder={isSubtask ? "Subtask Name" : "Quest Name"}
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                        required
-                    />
-                    <select
-                        name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                    >
-                        {Object.keys(categoryColors).map((category) => (
-                            <option key={category} value={category}>
-                                {category}
-                            </option>
-                        ))}
-                    </select>
-                    <input
-                        type="text"
-                        name="goal"
-                        placeholder="Goal"
-                        value={formData.goal}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                        required
-                    />
-                    {!isSubtask && (
-                        <>
-                            <input
-                                type="date"
-                                name="dueDate"
-                                value={formData.dueDate}
-                                onChange={handleChange}
-                                className="border rounded p-2"
-                                required
-                            />
-                            <input
-                                type="number"
-                                name="daysLeft"
-                                placeholder="Days Left"
-                                value={formData.daysLeft}
-                                onChange={handleChange}
-                                className="border rounded p-2"
-                                readOnly // Make this field read-only since it's auto-calculated
-                            />
-                        </>
-                    )}
-                    <input
-                        type="number"
-                        name="xp"
-                        placeholder="XP"
-                        value={formData.xp}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                        required
-                    />
-                    <select
-                        name="priority"
-                        value={formData.priority}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                    >
-                        {[1, 2, 3, 4].map((level) => (
-                            <option key={level} value={level}>
-                                Priority {level}
-                            </option>
-                        ))}
-                    </select>
-                    <select
-                        name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        className="border rounded p-2"
-                    >
-                        <option value="available">Available</option>
-                        <option value="ongoing">Ongoing</option>
-                        <option value="completed">Completed</option>
-                    </select>
-
-                    {/* Subtask Section */}
-                    <div>
-                        <h3 className="text-lg font-bold mb-2">Subtasks</h3>
-                        <div className="flex gap-2 mb-2">
-                            <input
-                                type="text"
-                                placeholder="Add a subtask"
-                                value={subtask}
-                                onChange={(e) => setSubtask(e.target.value)}
-                                className="border rounded p-2 flex-1"
-                            />
-                            <button
-                                type="button"
-                                onClick={handleAddSubtask}
-                                className="px-4 py-2 bg-blue-500 text-white rounded"
-                            >
-                                Add
-                            </button>
-                        </div>
-                        <ul className="list-disc pl-5">
-                            {Array.isArray(formData.subtasks) &&
-                                formData.subtasks.map((task, index) => (
-                                    <li key={index} className="flex justify-between items-center">
-                                        <span>{task}</span>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveSubtask(index)}
-                                            className="text-red-500 text-sm"
-                                        >
-                                            Remove
-                                        </button>
-                                    </li>
-                                ))}
-                        </ul>
-                    </div>
-
-                    {/* EXP Progress Bar for Subtasks */}
-                    {isSubtask && (
-                        <div>
-                            <h3 className="text-lg font-bold mb-2">EXP Progress</h3>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    name="progress"
-                                    placeholder="Progress (%)"
-                                    value={formData.progress}
-                                    onChange={handleProgressChange}
-                                    className="border rounded p-2 w-20"
-                                />
-                                <span>{formData.progress}%</span>
-                            </div>
-                            <div className="w-full h-4 bg-gray-200 rounded-full mt-2">
-                                <div
-                                    className="h-full bg-yellow-500 rounded-full"
-                                    style={{ width: `${formData.progress}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 rounded"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded"
-                        >
-                            {initialData.name ? "Save Changes" : "Add"}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
+// Fixed size hook for ALL boards (add, quest, subtask) - perfectly consistent
+const useFixedBoardSize = () => {
+  // Set consistent fixed dimensions for all boards
+  return {
+    width: "w-[320px]", // Fixed width for all boards
+    height: "h-[220px]", // Fixed height for all boards
+  };
 };
 
-// --- QuestBoard Component ---
 const QuestBoard = ({
-    type = "default",
-    level = 1,
-    daysLeft = "n",
-    name = "Task Name",
-    category = "Other",
-    goal = "Goal",
-    dueDate = "00/00/00",
-    xp = 0,
-    priority = 1,
-    status = "available",
-    progress = 0, // Add progress for subtasks
-    onAddQuest,
-    onDeleteQuest,
-    onEditQuest,
-    onChangeStatus,
+  id,
+  name = "",
+  category = "Other", // Provide default values to prevent undefined
+  goal = "",
+  dueDate,
+  xp = 0,
+  priority = 1,
+  status = "available",
+  progress = 0,
+  daysLeft = 0,
+  type = "default",
+  onAddQuest,
+  onDeleteQuest,
+  onEditQuest,
+  onChangeStatus,
+  onAddSubtask,
 }) => {
-    const [showForm, setShowForm] = useState(false);
-    const [showMenu, setShowMenu] = useState(false);
-    const [editData, setEditData] = useState(null); // State to hold the data being edited
+  const { width, height } = useFixedBoardSize();
+  const [showMenu, setShowMenu] = useState(false);
+  const [isSubtask, setIsSubtask] = useState(false);
+  const menuRef = useRef(null);
 
-    const handleEditSubmit = (updatedData) => {
-        onEditQuest(updatedData); // Call the parent-provided edit function
-        setShowForm(false); // Close the form after submission
+  // Determine if this is a subtask board
+  useEffect(() => {
+    setIsSubtask(type === "subtask");
+  }, [type]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        showMenu &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setShowMenu(false);
+      }
     };
 
-    const handleEditClick = () => {
-        setEditData({
-            name,
-            category,
-            goal,
-            dueDate,
-            xp,
-            daysLeft,
-            priority,
-            status,
-            progress, // Include progress for subtasks
-        });
-        setShowForm(true);
-    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMenu]);
 
-    if (type === "add") {
-        return (
-            <>
-                <div
-                    className="w-80 h-52 bg-white rounded-xl shadow-md flex items-center justify-center cursor-pointer"
-                    onClick={() => setShowForm(true)}
+  // For add quest button - SAME EXACT SIZE as other boards
+  if (type === "add") {
+    return (
+      <button
+        onClick={() => onAddQuest && onAddQuest()}
+        className={`${width} ${height} flex items-center justify-center 
+                  bg-white dark:bg-gray-800 rounded-lg shadow-md border-2 
+                  border-dashed border-gray-300 dark:border-gray-600 
+                  hover:border-indigo-500 dark:hover:border-indigo-400 
+                  transition-colors duration-200`}
+        style={{
+          width: "320px", // Explicitly set width
+          minHeight: "220px", // Ensure exact height even with minimal content
+          maxWidth: "320px", // Prevent expansion
+        }}
+      >
+        <div className="flex flex-col items-center">
+          <span className="text-5xl text-gray-400 dark:text-gray-500 mb-2">
+            +
+          </span>
+          <span className="text-lg text-gray-500 dark:text-gray-400">
+            Add New Quest
+          </span>
+        </div>
+      </button>
+    );
+  }
+
+  // Safe access to category string
+  const categoryStr = typeof category === "string" ? category : "Other";
+  const categoryInitials = categoryStr.substring(0, 2);
+
+  // Handle category color and style
+  const categoryStyle = categoryColors[categoryStr] || categoryColors.Other;
+  const bgColor = categoryStyle.split(" ")[0] || "bg-gray-200";
+  const textColor = categoryStyle.split(" ")[1] || "text-gray-700";
+
+  // Determine days left status
+  const isOverdue = status !== "completed" && daysLeft < 0;
+  const daysLeftColor = isOverdue
+    ? "bg-red-200 text-red-800"
+    : daysLeft <= 3
+    ? "bg-yellow-200 text-yellow-800"
+    : "bg-green-200 text-green-800";
+
+  return (
+    <div
+      className={`${width} ${height} bg-white dark:bg-gray-800 
+                rounded-lg shadow-md overflow-hidden p-4 flex flex-col`}
+      style={{
+        width: "320px", // Explicitly set width
+        minHeight: "220px", // Ensure exact height even with minimal content
+        maxWidth: "320px", // Prevent expansion
+      }}
+    >
+      {/* LAYER 1: Category Circle, Task Name, Settings Button */}
+      <div className="flex items-center mb-3">
+        {/* Category Circle */}
+        <div
+          className={`w-10 h-10 rounded-full ${bgColor} flex items-center justify-center flex-shrink-0`}
+        >
+          <span className={`text-sm font-medium ${textColor}`}>
+            {categoryInitials}
+          </span>
+        </div>
+
+        {/* Task Name */}
+        <h3 className="flex-grow ml-3 font-bold text-lg text-gray-900 dark:text-white truncate">
+          {name}
+        </h3>
+
+        {/* Settings Button */}
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className="p-1 ml-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex-shrink-0"
+        >
+          <svg
+            className="w-5 h-5 text-gray-600 dark:text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+            />
+          </svg>
+        </button>
+
+        {/* Dropdown menu */}
+        {showMenu && (
+          <div
+            ref={menuRef}
+            className="absolute top-14 right-4 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg z-20"
+          >
+            <div className="py-1">
+              {/* Only show available options based on current status */}
+              {status !== "ongoing" && (
+                <button
+                  onClick={() => {
+                    onChangeStatus && onChangeStatus("ongoing");
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                    <span className="text-gray-500 text-lg font-bold">+ Add Quest</span>
-                </div>
-                {showForm && (
-                    <AddQuestForm
-                        onSubmit={onAddQuest}
-                        onClose={() => setShowForm(false)}
+                  <svg
+                    className="w-4 h-4 mr-2 text-yellow-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
                     />
-                )}
-            </>
-        );
-    }
+                  </svg>
+                  <span>Move to Ongoing</span>
+                </button>
+              )}
 
-    if (type === "default") {
-        return (
-            <>
-                <div className="w-80 h-52 bg-white rounded-xl shadow-[0px_2px_4px_0px_rgba(0,0,0,0.25)] flex items-center justify-center">
-                    {/* Inner Frame */}
-                    <div className="w-72 h-48 p-4 bg-gray-50 rounded-lg flex flex-col justify-between">
-                        {/* Layer 1: Top Row */}
-                        <div className="flex justify-between items-center">
-                            {/* Category Circle and Task Name */}
-                            <div className="flex items-center gap-4">
-                                <div
-                                    className={`w-8 h-8 ${categoryColors[category] || "bg-neutral-400"} rounded-full`}
-                                />
-                                <div className="text-neutral-700 text-lg font-bold truncate text-left flex-1">
-                                    {name}
-                                </div>
-                            </div>
-                            {/* Settings Button */}
-                            <div className="relative">
-                                <button
-                                    className="p-1 rounded-full hover:bg-gray-200 flex items-center justify-center"
-                                    onClick={() => setShowMenu((prev) => !prev)}
-                                >
-                                    <div className="flex flex-col items-center justify-center gap-0.5">
-                                        <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                                        <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                                        <span className="w-1 h-1 bg-gray-500 rounded-full"></span>
-                                    </div>
-                                </button>
-                                {showMenu && (
-                                    <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
-                                        <button
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                            onClick={handleEditClick}
-                                        >
-                                            Edit
-                                        </button>
-                                        {status !== "available" && (
-                                            <button
-                                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                                onClick={() => onChangeStatus("available")}
-                                            >
-                                                Move to Available
-                                            </button>
-                                        )}
-                                        {status !== "ongoing" && (
-                                            <button
-                                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                                onClick={() => onChangeStatus("ongoing")}
-                                            >
-                                                Move to Ongoing
-                                            </button>
-                                        )}
-                                        {status !== "completed" && (
-                                            <button
-                                                className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                                onClick={() => onChangeStatus("completed")}
-                                            >
-                                                Move to Completed
-                                            </button>
-                                        )}
-                                        <button
-                                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                            onClick={onDeleteQuest}
-                                        >
-                                            Delete
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Layer 2: Descriptive Details */}
-                        <div className="flex items-center justify-center gap-2 text-neutral-500 text-sm mt-2">
-                            <span>{category}</span>
-                            <div
-                                className={`w-1 h-1 ${categoryColors[category] || "bg-neutral-400"} rounded-full`}
-                            />
-                            <span>{goal}</span>
-                        </div>
-
-                        {/* Layer 3: Deadline Info */}
-                        {type === "default" && (
-                            <div className="flex justify-between items-center mt-4">
-                                <div className="px-2 py-0.5 bg-gray-200 rounded-full text-xs font-bold text-blue-900">
-                                    {daysLeft} Day(s) Left
-                                </div>
-                                <div className="px-2 py-0.5 bg-gray-200 rounded-full text-xs font-bold text-neutral-700">
-                                    {dueDate}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Subtask Progress Section */}
-                        {type === "subtask" && (
-                            <div className="mt-4">
-                                <h3 className="text-sm font-bold text-neutral-700 mb-2">
-                                    Progress: {progress}%
-                                </h3>
-                                <div className="w-full h-4 bg-gray-200 rounded-full">
-                                    <div
-                                        className={`h-full rounded-full ${
-                                            progress > 0 ? "bg-yellow-500" : "bg-gray-400"
-                                        }`}
-                                        style={{ width: `${progress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Layer 4: Priority and EXP */}
-                        <div className="flex justify-between items-center mt-4">
-                            {/* Priority */}
-                            <div className="w-16 h-9 bg-yellow-300 rounded-lg flex items-center justify-center">
-                                <div className="flex items-center gap-0.5">
-                                    {[...Array(4)].map((_, index) => (
-                                        <div
-                                            key={index}
-                                            className={`w-3 h-3 rounded-full ${
-                                                index < priority ? "bg-yellow-500" : "bg-gray-300"
-                                            }`}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                            {/* Level Badge and EXP */}
-                            <div className="flex items-center gap-4">
-                                <img
-                                    src={SwordShieldIcon}
-                                    alt="Level Badge"
-                                    className="w-6 h-6"
-                                />
-                                <div className="text-neutral-700 text-sm font-bold">
-                                    {xp.toString().padStart(3, "0")} EXP
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Edit Form */}
-                {showForm && (
-                    <AddQuestForm
-                        onSubmit={handleEditSubmit}
-                        onClose={() => setShowForm(false)}
-                        initialData={{
-                            name,
-                            category,
-                            goal,
-                            dueDate,
-                            xp,
-                            daysLeft,
-                            priority,
-                            status,
-                            progress, // Pass progress to the edit form
-                        }}
-                        isSubtask={type === "subtask"}
+              {status !== "available" && (
+                <button
+                  onClick={() => {
+                    onChangeStatus && onChangeStatus("available");
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2 text-blue-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                     />
-                )}
-            </>
-        );
-    }
+                  </svg>
+                  <span>Move to Available</span>
+                </button>
+              )}
 
-    return null;
+              {status !== "completed" && (
+                <button
+                  onClick={() => {
+                    onChangeStatus && onChangeStatus("completed");
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2 text-green-500"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>Mark as Completed</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  onEditQuest && onEditQuest();
+                  setShowMenu(false);
+                }}
+                className="flex w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <svg
+                  className="w-4 h-4 mr-2 text-gray-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+                <span>Edit</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onDeleteQuest &&
+                    window.confirm(
+                      "Are you sure you want to delete this quest?"
+                    ) &&
+                    onDeleteQuest();
+                  setShowMenu(false);
+                }}
+                className="flex w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+                <span>Delete</span>
+              </button>
+
+              {/* Only show Add Subtask for non-subtask boards */}
+              {!isSubtask && (
+                <button
+                  onClick={() => {
+                    onAddSubtask && onAddSubtask();
+                    setShowMenu(false);
+                  }}
+                  className="flex w-full px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  <span>Add Subtask</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* LAYER 2: Category Name + Separator + Goal */}
+      <div className="flex items-center text-sm mb-4">
+        <span className={textColor}>{categoryStr}</span>
+        <div className={`w-1.5 h-1.5 rounded-full mx-2 ${bgColor}`}></div>
+        <p className="text-gray-600 dark:text-gray-300 truncate">{goal}</p>
+      </div>
+
+      {/* LAYER 3: Based on type - either deadline info or progress */}
+      <div className="mb-4">
+        {isSubtask ? (
+          <div>
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                Progress: {progress}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+              <div
+                className="h-2.5 rounded-full bg-yellow-400"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center text-sm">
+            <span className={`px-3 py-1 rounded-full ${daysLeftColor}`}>
+              {isOverdue ? "Overdue" : `${daysLeft} days left`}
+            </span>
+            <span className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-md ml-3">
+              {dueDate
+                ? new Date(dueDate).toLocaleDateString("en-US", {
+                    month: "2-digit",
+                    day: "2-digit",
+                    year: "2-digit",
+                  })
+                : "No due date"}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* LAYER 4: Priority stars and XP reward */}
+      <div className="flex justify-between items-center mt-auto">
+        {/* Priority Stars */}
+        <div className="flex items-center rounded-lg bg-yellow-100 dark:bg-yellow-900 px-2 py-1">
+          {[...Array(priority)].map((_, i) => (
+            <svg
+              key={i}
+              className="w-4 h-4 text-yellow-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+          ))}
+        </div>
+
+        {/* XP Reward with SwordShield image */}
+        <div className="flex items-center">
+          <span className="mr-1">
+            <img
+              src={SwordShieldIcon}
+              alt="XP"
+              className="w-5 h-5 object-contain"
+            />
+          </span>
+          <span className="text-sm font-medium bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 px-2 py-1 rounded">
+            {xp} XP
+          </span>
+        </div>
+      </div>
+
+      {/* Progress bar at bottom (for non-subtask) */}
+      {!isSubtask && status !== "completed" && (
+        <div className="w-full bg-gray-200 dark:bg-gray-700 h-1 mt-4 rounded-full">
+          <div
+            className="h-1 rounded-full bg-indigo-500"
+            style={{ width: `${progress}%` }}
+          ></div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 QuestBoard.propTypes = {
-    type: PropTypes.oneOf(["default", "add", "subtask"]),
-    level: PropTypes.number,
-    daysLeft: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    category: PropTypes.string,
-    goal: PropTypes.string,
-    dueDate: PropTypes.string,
-    xp: PropTypes.number,
-    priority: PropTypes.number,
-    status: PropTypes.string,
-    onAddQuest: PropTypes.func,
-    onDeleteQuest: PropTypes.func,
-    onEditQuest: PropTypes.func,
-    onChangeStatus: PropTypes.func,
+  id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  name: PropTypes.string,
+  category: PropTypes.string,
+  goal: PropTypes.string,
+  dueDate: PropTypes.string,
+  xp: PropTypes.number,
+  priority: PropTypes.number,
+  status: PropTypes.string,
+  progress: PropTypes.number,
+  daysLeft: PropTypes.number,
+  type: PropTypes.string,
+  onAddQuest: PropTypes.func,
+  onDeleteQuest: PropTypes.func,
+  onEditQuest: PropTypes.func,
+  onChangeStatus: PropTypes.func,
+  onAddSubtask: PropTypes.func,
 };
 
 export default QuestBoard;
