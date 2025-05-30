@@ -1,138 +1,171 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  Suspense,
+  lazy,
+} from "react";
 import { useNavigate } from "react-router-dom";
-import QuestListView from "../components/quest/QuestList";
-import QuestCalendarView from "../components/quest/QuestCalendar";
 import QuestSection from "../components/quest/QuestSection";
-import SettingsMenu from "../components/quest/SettingsMenu";
+import SettingsMenu from "../components/quest/settings/SettingsMenu";
+import AddQuestForm from "../components/forms/AddQuestForm";
 import useLevelSystem from "../features/leveling/useLevelSystem";
 import useQuestHandlers from "../hooks/useQuestHandlers";
-import { filterQuestsByStatus } from "../utils/QuestBoard/questFilters";
-import { getThemeClass } from "../utils/themeUtils";
+import { useTheme } from "../contexts/ThemeContext";
+import PageHeader from "../components/ui/PageHeader";
+
+const QuestListView = lazy(() => import("../components/quest/list/QuestList"));
+const QuestCalendarView = lazy(() =>
+  import("../components/quest/calendar/QuestCalendar")
+);
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught by boundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 bg-red-50 text-red-600 rounded">
+          <p className="font-medium">Something went wrong.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const calculateDaysLeft = (dueDate) => {
+  if (!dueDate) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const due = new Date(dueDate);
+  due.setHours(0, 0, 0, 0);
+
+  const diffTime = due - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
+const formatDate = (date) => {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString();
+};
+
+const formatDateForInput = (date) => {
+  if (!date) return "";
+  return new Date(date).toISOString().split("T")[0];
+};
 
 const Quests = () => {
   const navigate = useNavigate();
   const { level, addXP } = useLevelSystem(0);
   const [showMenu, setShowMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleTheme } = useTheme();
   const [viewMode, setViewMode] = useState("board");
-  const [containerHeight, setContainerHeight] = useState("100vh");
   const contentRef = useRef(null);
-
-  // Track viewport height changes for responsive design
-  useEffect(() => {
-    const updateHeight = () => {
-      // Get visible viewport height
-      const vh = window.innerHeight;
-      setContainerHeight(`${vh}px`);
-    };
-
-    // Initial height set
-    updateHeight();
-
-    // Listen for resize and orientation change
-    window.addEventListener("resize", updateHeight);
-    window.addEventListener("orientationchange", updateHeight);
-
-    // Listen for zoom changes
-    window.addEventListener("wheel", (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        // Small delay to ensure zoom completes
-        setTimeout(updateHeight, 100);
-      }
-    });
-
-    // Clean up event listeners
-    return () => {
-      window.removeEventListener("resize", updateHeight);
-      window.removeEventListener("orientationchange", updateHeight);
-      window.removeEventListener("wheel", updateHeight);
-    };
-  }, []);
-
-  // Initial quests data
-  const initialQuests = [
-    {
-      id: 1,
-      name: "Complete Project Documentation",
-      category: "Work",
-      goal: "Write and format all technical documentation",
-      dueDate: "2023-12-15",
-      xp: 100,
-      daysLeft: 5,
-      priority: 2,
-      status: "available",
-      progress: 20,
-      subtasks: [
-        { id: 1, name: "Create outline", progress: 100 },
-        { id: 2, name: "Write first draft", progress: 60 },
-        { id: 3, name: "Peer review", progress: 0 },
-      ],
-    },
-    {
-      id: 2,
-      name: "Learn React Hooks",
-      category: "Study",
-      goal: "Master useEffect, useState, and useMemo",
-      dueDate: "2023-12-10",
-      xp: 75,
-      daysLeft: 3,
-      priority: 1,
-      status: "ongoing",
-      progress: 45,
-      subtasks: [
-        { id: 1, name: "Study useState", progress: 100 },
-        { id: 2, name: "Practice useEffect", progress: 80 },
-      ],
-    },
-    {
-      id: 3,
-      name: "Weekly Fitness Goal",
-      category: "Fitness",
-      goal: "Run 15km total this week",
-      dueDate: "2023-12-07",
-      xp: 50,
-      daysLeft: 1,
-      priority: 3,
-      status: "completed",
-      progress: 100,
-      subtasks: [
-        { id: 1, name: "Monday run (5km)", progress: 100 },
-        { id: 2, name: "Wednesday run (5km)", progress: 100 },
-        { id: 3, name: "Friday run (5km)", progress: 100 },
-      ],
-    },
-  ];
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    mode: "add",
+    questData: null,
+    parentId: null,
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const {
     quests,
-    handleAddQuest,
-    handleEditQuest,
+    handleAddQuest: baseHandleAddQuest,
+    handleEditQuest: baseHandleEditQuest,
     handleDeleteQuest,
     handleChangeStatus,
-    handleAddSubtask,
-    handleEditSubtask,
+    handleAddSubtask: baseHandleAddSubtask,
+    handleEditSubtask: baseHandleEditSubtask,
     handleDeleteSubtask,
-    handleChangeSubtaskStatus, // Make sure this is added
-  } = useQuestHandlers(initialQuests);
+    handleChangeSubtaskStatus,
+    updateQuestProgress,
+  } = useQuestHandlers();
 
-  // Filter quests by status - memoized for performance
-  const availableQuests = useMemo(
-    () => filterQuestsByStatus(quests, "available"),
-    [quests]
-  );
-  const ongoingQuests = useMemo(
-    () => filterQuestsByStatus(quests, "ongoing"),
-    [quests]
-  );
-  const completedQuests = useMemo(
-    () => filterQuestsByStatus(quests, "completed"),
-    [quests]
+  const handleAddQuest = useCallback(
+    (questData) => {
+      const enhancedData = {
+        ...questData,
+        daysLeft: calculateDaysLeft(questData.dueDate),
+      };
+      baseHandleAddQuest(enhancedData);
+    },
+    [baseHandleAddQuest]
   );
 
-  // Theme class for styling
-  const themeClass = getThemeClass(darkMode);
+  const handleEditQuest = useCallback(
+    (questId, questData) => {
+      const enhancedData = {
+        ...questData,
+        daysLeft: calculateDaysLeft(questData.dueDate),
+      };
+      baseHandleEditQuest(questId, enhancedData);
+    },
+    [baseHandleEditQuest]
+  );
 
-  // Handler for completing quests and adding XP
+  const handleAddSubtask = useCallback(
+    (parentId, subtaskData) => {
+      const enhancedData = {
+        ...subtaskData,
+        daysLeft: calculateDaysLeft(subtaskData.dueDate),
+      };
+      baseHandleAddSubtask(parentId, enhancedData);
+    },
+    [baseHandleAddSubtask]
+  );
+
+  const handleEditSubtask = useCallback(
+    (parentId, subtaskId, subtaskData) => {
+      const enhancedData = {
+        ...subtaskData,
+        daysLeft: calculateDaysLeft(subtaskData.dueDate),
+      };
+      baseHandleEditSubtask(parentId, subtaskId, enhancedData);
+    },
+    [baseHandleEditSubtask]
+  );
+
+  const questByStatus = useMemo(() => {
+    const available = [];
+    const ongoing = [];
+    const completed = [];
+
+    quests.forEach((quest) => {
+      const status = quest.status || "available";
+      if (status === "available") available.push(quest);
+      else if (status === "ongoing") ongoing.push(quest);
+      else if (status === "completed") completed.push(quest);
+    });
+
+    return { available, ongoing, completed };
+  }, [quests]);
+
   const handleCompleteQuest = useCallback(
     (questId) => {
       const quest = quests.find((q) => q.id === questId);
@@ -144,153 +177,379 @@ const Quests = () => {
     [quests, addXP, handleChangeStatus]
   );
 
-  // Render different views based on viewMode
+  const processedSubtasks = useMemo(() => {
+    try {
+      return quests
+        .filter(
+          (quest) => Array.isArray(quest.subtasks) && quest.subtasks.length > 0
+        )
+        .flatMap((quest) =>
+          quest.subtasks.map((subtask) => ({
+            ...subtask,
+            parentId: quest.id,
+            parentName: quest.name,
+            category: subtask.category || "Subtask",
+            goal: subtask.goal || `Part of: ${quest.name}`,
+            daysLeft: subtask.daysLeft ?? calculateDaysLeft(subtask.dueDate),
+            dueDate: subtask.dueDate || quest.dueDate,
+            priority: subtask.priority || 1,
+            type: "subtask",
+            xp: subtask.xp || Math.floor((quest.xp || 0) / 4),
+            status: subtask.status || "available",
+          }))
+        );
+    } catch (err) {
+      console.error("Error processing subtasks:", err);
+      return [];
+    }
+  }, [quests]);
+
+  const subtasksByStatus = useMemo(() => {
+    const available = [];
+    const ongoing = [];
+    const completed = [];
+
+    processedSubtasks.forEach((subtask) => {
+      const status = subtask.status || "available";
+      if (status === "available") available.push(subtask);
+      else if (status === "ongoing") ongoing.push(subtask);
+      else if (status === "completed") completed.push(subtask);
+    });
+
+    return { available, ongoing, completed };
+  }, [processedSubtasks]);
+
+  const questData = useMemo(
+    () => ({
+      quests,
+      allSubtasks: processedSubtasks,
+      availableQuests: questByStatus.available,
+      ongoingQuests: questByStatus.ongoing,
+      completedQuests: questByStatus.completed,
+      availableSubtasks: subtasksByStatus.available,
+      ongoingSubtasks: subtasksByStatus.ongoing,
+      completedSubtasks: subtasksByStatus.completed,
+    }),
+    [quests, processedSubtasks, questByStatus, subtasksByStatus]
+  );
+
+  const openAddQuestModal = useCallback(() => {
+    setError(null);
+    setModalState({
+      isOpen: true,
+      mode: "add",
+      questData: null,
+      parentId: null,
+    });
+  }, []);
+
+  const openEditQuestModal = useCallback(
+    (questId) => {
+      setError(null);
+      const questToEdit = quests.find((q) => q.id === questId);
+      if (questToEdit) {
+        const formattedQuest = {
+          ...questToEdit,
+          dueDate: questToEdit.dueDate
+            ? formatDateForInput(questToEdit.dueDate)
+            : "",
+        };
+
+        setModalState({
+          isOpen: true,
+          mode: "edit",
+          questData: formattedQuest,
+          parentId: null,
+        });
+      }
+    },
+    [quests]
+  );
+
+  const openAddSubtaskModal = useCallback(
+    (parentId) => {
+      setError(null);
+      const parentQuest = quests.find((q) => q.id === parentId);
+      if (parentQuest) {
+        setModalState({
+          isOpen: true,
+          mode: "addSubtask",
+          questData: {
+            category: "Subtask",
+            dueDate: parentQuest.dueDate
+              ? formatDateForInput(parentQuest.dueDate)
+              : "",
+          },
+          parentId,
+        });
+      }
+    },
+    [quests]
+  );
+
+  const openEditSubtaskModal = useCallback(
+    (parentId, subtaskId) => {
+      setError(null);
+      const parentQuest = quests.find((q) => q.id === parentId);
+      if (parentQuest) {
+        const subtaskToEdit = parentQuest.subtasks?.find(
+          (s) => s.id === subtaskId
+        );
+        if (subtaskToEdit) {
+          const formattedSubtask = {
+            ...subtaskToEdit,
+            isSubtask: true,
+            parentId,
+            parentName: parentQuest.name,
+            category: subtaskToEdit.category || "Subtask",
+            dueDate: subtaskToEdit.dueDate
+              ? formatDateForInput(subtaskToEdit.dueDate)
+              : "",
+            priority: subtaskToEdit.priority || 1,
+            xp: subtaskToEdit.xp || Math.floor((parentQuest.xp || 0) / 4),
+          };
+
+          setModalState({
+            isOpen: true,
+            mode: "edit",
+            questData: formattedSubtask,
+            parentId,
+          });
+        }
+      }
+    },
+    [quests]
+  );
+
+  const closeModal = useCallback(() => {
+    setModalState((prev) => ({ ...prev, isOpen: false }));
+    setError(null);
+
+    const timer = setTimeout(() => {
+      setModalState({
+        isOpen: false,
+        mode: "add",
+        questData: null,
+        parentId: null,
+      });
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleModalSubmit = useCallback(
+    async (data) => {
+      setSubmitting(true);
+      setError(null);
+
+      try {
+        switch (modalState.mode) {
+          case "add":
+            await handleAddQuest(data);
+            break;
+          case "edit":
+            if (modalState.questData?.isSubtask) {
+              await handleEditSubtask(
+                modalState.parentId,
+                modalState.questData.id,
+                { ...data, isSubtask: true }
+              );
+            } else {
+              await handleEditQuest(modalState.questData.id, data);
+            }
+            break;
+          case "addSubtask":
+            await handleAddSubtask(modalState.parentId, {
+              ...data,
+              isSubtask: true,
+            });
+            break;
+          default:
+            throw new Error("Unknown modal mode");
+        }
+        closeModal();
+      } catch (err) {
+        console.error("Form submission error:", err);
+        setError(err.message || "Failed to save quest");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [
+      modalState,
+      handleAddQuest,
+      handleEditQuest,
+      handleEditSubtask,
+      handleAddSubtask,
+      closeModal,
+    ]
+  );
+
   const renderContent = useCallback(() => {
-    // Extract all subtasks for easier management at the same level
-    const allSubtasks = quests
-      .filter((quest) => quest.subtasks?.length > 0)
-      .flatMap((quest) =>
-        quest.subtasks.map((subtask) => ({
-          ...subtask,
-          parentId: quest.id,
-          parentName: quest.name,
-          // Ensure consistent styling by adding these properties if missing
-          category: subtask.category || "Subtask",
-          goal: subtask.goal || "",
-          daysLeft: subtask.daysLeft || 0,
-          priority: subtask.priority || 1,
-          type: "subtask",
-        }))
-      );
-
-    // Filter subtasks by status
-    const availableSubtasks = allSubtasks.filter(
-      (subtask) => subtask.status === "available" || !subtask.status
-    );
-
-    const ongoingSubtasks = allSubtasks.filter(
-      (subtask) => subtask.status === "ongoing"
-    );
-
-    const completedSubtasks = allSubtasks.filter(
-      (subtask) => subtask.status === "completed"
-    );
-
     switch (viewMode) {
       case "board":
         return (
-          <div className="space-y-12">
-            {" "}
-            {/* Increased spacing for better section separation */}
-            <QuestSection
-              title="Available"
-              quests={availableQuests}
-              subtasks={availableSubtasks}
-              showAddButton={true}
-              onAddQuest={handleAddQuest}
-              onDeleteQuest={handleDeleteQuest}
-              onEditQuest={handleEditQuest}
-              onChangeStatus={handleChangeStatus}
-              onAddSubtask={handleAddSubtask}
-              onEditSubtask={handleEditSubtask}
-              onDeleteSubtask={handleDeleteSubtask}
-              onChangeSubtaskStatus={handleChangeSubtaskStatus}
-            />
-            <QuestSection
-              title="Ongoing"
-              quests={ongoingQuests}
-              subtasks={ongoingSubtasks}
-              onAddQuest={handleAddQuest}
-              onDeleteQuest={handleDeleteQuest}
-              onEditQuest={handleEditQuest}
-              onChangeStatus={handleChangeStatus}
-              onAddSubtask={handleAddSubtask}
-              onEditSubtask={handleEditSubtask}
-              onDeleteSubtask={handleDeleteSubtask}
-              onChangeSubtaskStatus={handleChangeSubtaskStatus}
-            />
-            <QuestSection
-              title="Completed"
-              quests={completedQuests}
-              subtasks={completedSubtasks}
-              onAddQuest={handleAddQuest}
-              onDeleteQuest={handleDeleteQuest}
-              onEditQuest={handleEditQuest}
-              onChangeStatus={handleChangeStatus}
-              onAddSubtask={handleAddSubtask}
-              onEditSubtask={handleEditSubtask}
-              onDeleteSubtask={handleDeleteSubtask}
-              onChangeSubtaskStatus={handleChangeSubtaskStatus}
-            />
+          <div className="space-y-4">
+            <ErrorBoundary>
+              <QuestSection
+                title="Available"
+                quests={questData.availableQuests.map((quest) => ({
+                  ...quest,
+                  daysLeft: quest.daysLeft ?? calculateDaysLeft(quest.dueDate),
+                  status: quest.status || "available",
+                }))}
+                subtasks={questData.availableSubtasks}
+                showAddButton={true}
+                onAddQuest={openAddQuestModal}
+                onDeleteQuest={handleDeleteQuest}
+                onEditQuest={openEditQuestModal}
+                onChangeStatus={handleChangeStatus}
+                onAddSubtask={openAddSubtaskModal}
+                onEditSubtask={openEditSubtaskModal}
+                onDeleteSubtask={handleDeleteSubtask}
+                onChangeSubtaskStatus={handleChangeSubtaskStatus}
+              />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+              <QuestSection
+                title="Ongoing"
+                quests={questData.ongoingQuests}
+                subtasks={questData.ongoingSubtasks}
+                showAddButton={false}
+                onAddQuest={openAddQuestModal}
+                onDeleteQuest={handleDeleteQuest}
+                onEditQuest={openEditQuestModal}
+                onChangeStatus={handleChangeStatus}
+                onAddSubtask={openAddSubtaskModal}
+                onEditSubtask={openEditSubtaskModal}
+                onDeleteSubtask={handleDeleteSubtask}
+                onChangeSubtaskStatus={handleChangeSubtaskStatus}
+              />
+            </ErrorBoundary>
+
+            <ErrorBoundary>
+              <QuestSection
+                title="Completed"
+                quests={questData.completedQuests}
+                subtasks={questData.completedSubtasks}
+                showAddButton={false}
+                onAddQuest={openAddQuestModal}
+                onDeleteQuest={handleDeleteQuest}
+                onEditQuest={openEditQuestModal}
+                onChangeStatus={handleChangeStatus}
+                onAddSubtask={openAddSubtaskModal}
+                onEditSubtask={openEditSubtaskModal}
+                onDeleteSubtask={handleDeleteSubtask}
+                onChangeSubtaskStatus={handleChangeSubtaskStatus}
+              />
+            </ErrorBoundary>
           </div>
         );
 
       case "list":
         return (
-          <QuestListView
-            quests={quests}
-            onAddQuest={handleAddQuest}
-            onEditQuest={handleEditQuest}
-            onDeleteQuest={handleDeleteQuest}
-            onChangeStatus={handleChangeStatus}
-          />
+          <ErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="p-8 text-center">Loading list view...</div>
+              }
+            >
+              <QuestListView
+                quests={questData.quests}
+                subtasks={questData.allSubtasks}
+                onAddQuest={openAddQuestModal}
+                onEditQuest={openEditQuestModal}
+                onDeleteQuest={handleDeleteQuest}
+                onChangeStatus={handleChangeStatus}
+                onAddSubtask={openAddSubtaskModal}
+                onEditSubtask={openEditSubtaskModal}
+                onDeleteSubtask={handleDeleteSubtask}
+                onChangeSubtaskStatus={handleChangeSubtaskStatus}
+              />
+            </Suspense>
+          </ErrorBoundary>
         );
 
       case "calendar":
-        return <QuestCalendarView quests={quests} />;
+        return (
+          <ErrorBoundary>
+            <Suspense
+              fallback={
+                <div className="p-8 text-center">Loading calendar view...</div>
+              }
+            >
+              <QuestCalendarView
+                quests={questData.quests}
+                subtasks={questData.allSubtasks}
+                onAddQuest={openAddQuestModal}
+                onEditQuest={openEditQuestModal}
+                onChangeStatus={handleChangeStatus}
+                onDeleteQuest={handleDeleteQuest}
+                onAddSubtask={openAddSubtaskModal}
+                onEditSubtask={openEditSubtaskModal}
+                onDeleteSubtask={handleDeleteSubtask}
+                onChangeSubtaskStatus={handleChangeSubtaskStatus}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        );
 
       default:
-        return null;
+        return <div>Unknown view mode: {viewMode}</div>;
     }
   }, [
     viewMode,
-    availableQuests,
-    ongoingQuests,
-    completedQuests,
-    quests, // Add quests to dependencies for subtask extraction
-    handleAddQuest,
-    handleEditQuest,
+    questData,
+    openAddQuestModal,
+    openEditQuestModal,
+    openAddSubtaskModal,
+    openEditSubtaskModal,
     handleDeleteQuest,
     handleChangeStatus,
-    handleAddSubtask,
-    handleEditSubtask,
     handleDeleteSubtask,
     handleChangeSubtaskStatus,
   ]);
 
   return (
-    <div
-      className={`flex flex-col ${themeClass}`}
-      style={{ height: containerHeight, maxHeight: containerHeight }}
-    >
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto" ref={contentRef}>
-          <div className="flex flex-col px-4 sm:px-6 lg:px-8 pt-6 pb-10 gap-6">
-            {/* Title and Settings Row */}
-            <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
-              <h1 className="text-3xl sm:text-4xl font-extrabold font-['Typold']">
-                {viewMode === "board"
-                  ? "Quest Board"
-                  : viewMode === "list"
-                  ? "Quest List"
-                  : "Quest Calendar"}
-              </h1>
+    <div className="w-full px-4 py-6">
+      <PageHeader
+        title={
+          viewMode === "board"
+            ? "Quest Board"
+            : viewMode === "list"
+            ? "Quest List"
+            : "Quest Calendar"
+        }
+        variant="standard"
+        size="large"
+      >
+        <SettingsMenu
+          showMenu={showMenu}
+          setShowMenu={setShowMenu}
+          darkMode={darkMode}
+          setDarkMode={toggleTheme}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+        />
+      </PageHeader>
 
-              <SettingsMenu
-                showMenu={showMenu}
-                setShowMenu={setShowMenu}
-                darkMode={darkMode}
-                setDarkMode={setDarkMode}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-              />
-            </div>
-
-            {/* View Content */}
-            <div className="flex-1 min-h-0">{renderContent()}</div>
-          </div>
-        </div>
+      <div className="mt-4" ref={contentRef}>
+        {renderContent()}
       </div>
+
+      <AddQuestForm
+        onSubmit={handleModalSubmit}
+        onClose={closeModal}
+        initialData={modalState.questData || {}}
+        isSubtask={
+          modalState.mode === "addSubtask" ||
+          (modalState.mode === "edit" && modalState.questData?.isSubtask)
+        }
+        isOpen={modalState.isOpen}
+        isSubmitting={submitting}
+        error={error}
+      />
     </div>
   );
 };

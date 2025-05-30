@@ -1,413 +1,410 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { categoryColors } from "../../utils/QuestBoard/questBoardConstants";
-
-const defaultQuestValues = {
-  name: "",
-  category: "Other",
-  goal: "",
-  xp: 50,
-  priority: 1,
-  status: "available",
-  progress: 0,
-};
 
 const AddQuestForm = ({
   onSubmit,
   onClose,
   initialData = {},
   isSubtask = false,
+  isOpen = true,
+  isSubmitting = false,
+  error = null,
 }) => {
-  // Set today's date as default for new quests
-  const getTodayDate = () => {
-    const today = new Date();
-    return today.toISOString().split("T")[0]; // Format as YYYY-MM-DD
-  };
-
-  // Merge initialData with default values to ensure all fields are defined
   const [formData, setFormData] = useState({
-    name: initialData.name || defaultQuestValues.name,
-    category: initialData.category || defaultQuestValues.category,
-    goal: initialData.goal || defaultQuestValues.goal,
-    dueDate: initialData.dueDate || getTodayDate(),
-    xp: initialData.xp ?? defaultQuestValues.xp,
-    daysLeft:
-      initialData.daysLeft ??
-      calculateDaysLeft(initialData.dueDate || getTodayDate()),
-    priority: initialData.priority ?? defaultQuestValues.priority,
-    status: initialData.status || defaultQuestValues.status,
-    subtasks: initialData.subtasks || [],
-    progress: initialData.progress ?? defaultQuestValues.progress,
-    isSubtask: isSubtask,
-    type: isSubtask ? "subtask" : "default",
+    name: "",
+    category: isSubtask ? "Subtask" : "Personal",
+    goal: "",
+    dueDate: "",
+    xp: isSubtask ? 5 : 10,
+    priority: 1,
+    ...initialData,
   });
 
-  const [subtask, setSubtask] = useState("");
-  const formRef = useRef(null);
+  const [formError, setFormError] = useState(null);
+  const nameInputRef = useRef(null);
+  const [showSubtasks, setShowSubtasks] = useState(false);
+  const [subtasks, setSubtasks] = useState([]);
 
-  // When isSubtask prop changes, update the form data
+  // Reset form when initialData changes
   useEffect(() => {
-    setFormData((prev) => ({
-      ...prev,
-      isSubtask,
-      type: isSubtask ? "subtask" : "default",
-    }));
-  }, [isSubtask]);
+    setFormData({
+      name: "",
+      category: isSubtask ? "Subtask" : "Personal",
+      goal: "",
+      dueDate: "",
+      xp: isSubtask ? 5 : 10,
+      priority: 1,
+      ...initialData,
+    });
+    setFormError(null);
 
-  // Close on escape key
-  useEffect(() => {
-    const handleEscape = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
-  }, [onClose]);
+    // If editing a quest with subtasks, load them
+    if (initialData && initialData.subtasks) {
+      setSubtasks(initialData.subtasks);
+      setShowSubtasks(initialData.subtasks.length > 0);
+    } else {
+      setSubtasks([]);
+      setShowSubtasks(false);
+    }
+  }, [initialData, isSubtask]);
 
-  // Close when clicking outside the form
+  // Focus the name input when modal opens
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (formRef.current && !formRef.current.contains(e.target)) {
-        onClose();
+    if (isOpen && nameInputRef.current) {
+      setTimeout(() => {
+        nameInputRef.current.focus();
+      }, 50);
+    }
+  }, [isOpen]);
+
+  const handleChange = (e) => {
+    const { name, value, type } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "number" ? parseInt(value, 10) || 0 : value,
+    });
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    setFormError(null);
+
+    try {
+      // Validate form
+      if (!formData.name.trim()) {
+        throw new Error("Quest name is required");
       }
+
+      onSubmit({
+        ...formData,
+        subtasks: subtasks.length > 0 ? subtasks : undefined,
+      });
+    } catch (err) {
+      console.error("Form validation error:", err);
+      setFormError(err.message || "Failed to submit form");
+    }
+  };
+
+  const addSubtask = () => {
+    const newSubtask = {
+      id: `temp-${Date.now()}`, // Temporary ID, will be replaced server-side
+      name: "",
+      status: "available",
+      isSubtask: true,
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+    setSubtasks([...subtasks, newSubtask]);
+    setShowSubtasks(true);
+  };
 
-  // Calculate days left from a date string
-  function calculateDaysLeft(dateString) {
-    if (!dateString) return 0;
+  const updateSubtask = (index, field, value) => {
+    const updatedSubtasks = [...subtasks];
+    updatedSubtasks[index] = {
+      ...updatedSubtasks[index],
+      [field]: value,
+    };
+    setSubtasks(updatedSubtasks);
+  };
 
-    const currentDate = new Date();
-    const selectedDate = new Date(dateString);
-    const timeDifference = selectedDate - currentDate;
-    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-    return daysLeft > 0 ? daysLeft : 0;
+  const removeSubtask = (index) => {
+    const updatedSubtasks = subtasks.filter((_, i) => i !== index);
+    setSubtasks(updatedSubtasks);
+    if (updatedSubtasks.length === 0) {
+      setShowSubtasks(false);
+    }
+  };
+
+  const modalTitle = isSubtask
+    ? initialData.id
+      ? "Edit Subtask"
+      : "Add New Subtask"
+    : initialData.id
+    ? "Edit Quest"
+    : "Add New Quest";
+
+  // Categories for dropdown
+  const categories = isSubtask
+    ? ["Subtask", "Critical", "Optional"]
+    : [
+        "Personal",
+        "Work",
+        "Health",
+        "Education",
+        "Financial",
+        "Social",
+        "Other",
+      ];
+
+  // If modal is closed, don't render anything
+  if (!isOpen && typeof window !== "undefined") {
+    return null;
   }
 
-  // Handle form field changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    // Automatically calculate daysLeft when dueDate changes
-    if (name === "dueDate") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        daysLeft: calculateDaysLeft(value),
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // Add a subtask to the list
-  const handleAddSubtask = () => {
-    if (subtask.trim()) {
-      setFormData((prev) => ({
-        ...prev,
-        subtasks: [...prev.subtasks, subtask],
-      }));
-      setSubtask(""); // Clear input field
-    }
-  };
-
-  // Remove a subtask from the list
-  const handleRemoveSubtask = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      subtasks: prev.subtasks.filter((_, i) => i !== index),
-    }));
-  };
-
-  // Update progress for subtasks
-  const handleProgressChange = (e) => {
-    const progress = Math.min(Math.max(parseInt(e.target.value) || 0, 0), 100);
-    setFormData((prev) => ({ ...prev, progress }));
-  };
-
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  // Handle pressing Enter in subtask input
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddSubtask();
-    }
-  };
-
-  // Get background color for category display
-  const getCategoryBgColor = (cat) => {
-    return categoryColors[cat]?.split(" ")[0] || "bg-gray-200";
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
       <div
-        ref={formRef}
-        className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
-      >
-        <h2 className="text-xl font-bold mb-4">
-          {initialData.name
-            ? isSubtask
-              ? "Edit Subtask"
-              : "Edit Quest"
-            : isSubtask
-            ? "Add New Subtask"
-            : "Add New Quest"}
-        </h2>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              {isSubtask ? "Subtask Name" : "Quest Name"}
-            </label>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              placeholder={isSubtask ? "Subtask Name" : "Quest Name"}
-              value={formData.name}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
+        className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-opacity-50"
+        onClick={onClose}
+      ></div>
 
-          <div>
-            <label
-              htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Category
-            </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-            >
-              {Object.keys(categoryColors).map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <div
-              className={`mt-1 w-6 h-6 rounded-full ${getCategoryBgColor(
-                formData.category
-              )}`}
-            ></div>
-          </div>
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full mx-4 shadow-xl">
+        {/* Close button */}
+        <div className="absolute top-4 right-4 z-10">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Close"
+          >
+            <div className="w-6 h-6 relative transform rotate-45">
+              <div className="absolute bg-gray-500 rounded-md w-6 h-1.5 top-2"></div>
+              <div className="absolute bg-gray-500 rounded-md h-6 w-1.5 left-2"></div>
+            </div>
+          </button>
+        </div>
 
-          <div>
-            <label
-              htmlFor="goal"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Goal
-            </label>
-            <input
-              id="goal"
-              type="text"
-              name="goal"
-              placeholder="Goal"
-              value={formData.goal}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
+        <form onSubmit={handleFormSubmit} className="p-6">
+          <div className="space-y-8">
+            {/* Show error if any */}
+            {(formError || error) && (
+              <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md p-3 text-sm">
+                {formError || error}
+              </div>
+            )}
 
-          {!isSubtask && (
-            <>
-              <div>
+            {/* Quest Name - Large Input */}
+            <div className="shadow-lg rounded-xl">
+              <input
+                ref={nameInputRef}
+                type="text"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full px-9 py-6 text-2xl italic font-light text-gray-500 placeholder-gray-400 border-0 rounded-xl shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter Quest Name"
+              />
+            </div>
+
+            {/* Two column layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
+              <div className="flex items-center">
+                <label
+                  htmlFor="category"
+                  className="w-24 font-bold text-gray-500 text-lg"
+                >
+                  Category
+                </label>
+                <div className="flex-1">
+                  <select
+                    id="category"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 focus:outline-none"
+                  >
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <label
+                  htmlFor="goal"
+                  className="w-24 font-bold text-gray-500 text-lg"
+                >
+                  Goal
+                </label>
+                <div className="flex-1">
+                  <input
+                    id="goal"
+                    name="goal"
+                    value={formData.goal || ""}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-500 focus:outline-none"
+                    placeholder="Set your goal"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center">
                 <label
                   htmlFor="dueDate"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  className="w-24 font-bold text-gray-500 text-lg"
                 >
-                  Due Date
+                  Date
                 </label>
-                <input
-                  id="dueDate"
-                  type="date"
-                  name="dueDate"
-                  value={formData.dueDate}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                  required
-                />
+                <div className="flex-1 relative">
+                  <input
+                    type="date"
+                    id="dueDate"
+                    name="dueDate"
+                    value={formData.dueDate || ""}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 shadow-md rounded-xl border-0 text-gray-500 italic font-light focus:outline-none appearance-none"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <div className="w-4 h-4 relative">
+                      <div className="absolute w-2.5 h-2 bg-gray-500 rounded-sm transform rotate-45 left-0 top-1.5"></div>
+                      <div className="absolute w-2.5 h-2 bg-gray-500 rounded-sm transform -rotate-45 right-0 top-1.5"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div>
+
+              <div className="flex items-center">
                 <label
-                  htmlFor="daysLeft"
-                  className="block text-sm font-medium text-gray-700 mb-1"
+                  htmlFor="priority"
+                  className="w-24 font-bold text-gray-500 text-lg"
                 >
-                  Days Left
+                  Deadline
                 </label>
-                <input
-                  id="daysLeft"
-                  type="number"
-                  name="daysLeft"
-                  value={formData.daysLeft}
-                  className="border rounded p-2 w-full bg-gray-100"
-                  readOnly
-                />
+                <div className="flex-1 relative">
+                  <select
+                    id="priority"
+                    name="priority"
+                    value={formData.priority || 1}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 shadow-md rounded-xl border-0 text-gray-500 italic font-light focus:outline-none appearance-none"
+                  >
+                    <option value={1}>Low Priority</option>
+                    <option value={2}>Medium Priority</option>
+                    <option value={3}>High Priority</option>
+                  </select>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                    <div className="w-4 h-4 relative">
+                      <div className="absolute w-2.5 h-2 bg-gray-500 rounded-sm transform rotate-45 left-0 top-1.5"></div>
+                      <div className="absolute w-2.5 h-2 bg-gray-500 rounded-sm transform -rotate-45 right-0 top-1.5"></div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </>
-          )}
+            </div>
 
-          <div>
-            <label
-              htmlFor="xp"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              XP
-            </label>
-            <input
-              id="xp"
-              type="number"
-              name="xp"
-              placeholder="XP"
-              value={formData.xp}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="priority"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Priority
-            </label>
-            <select
-              id="priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-            >
-              {[1, 2, 3, 4].map((level) => (
-                <option key={level} value={level}>
-                  Priority {level}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              htmlFor="status"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="border rounded p-2 w-full"
-            >
-              <option value="available">Available</option>
-              <option value="ongoing">Ongoing</option>
-              <option value="completed">Completed</option>
-            </select>
-          </div>
-
-          {/* Subtask Section */}
-          {!isSubtask && (
+            {/* Side Quests Section */}
             <div>
-              <h3 className="text-lg font-bold mb-2">Subtasks</h3>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  placeholder="Add a subtask"
-                  value={subtask}
-                  onChange={(e) => setSubtask(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="border rounded p-2 flex-1"
-                />
+              <div className="flex items-center gap-3 mb-5">
+                <h3 className="text-xl font-bold text-gray-500">Side Quests</h3>
+                <div className="flex-1 border-t border-gray-300 border-opacity-50"></div>
+              </div>
+
+              <div className="flex">
+                <div className="flex-1">
+                  {/* Subtasks List */}
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto pr-4">
+                    {subtasks.map((subtask, index) => (
+                      <div
+                        key={subtask.id || index}
+                        className="flex items-center gap-2 p-3 bg-white rounded-xl shadow border border-gray-200"
+                      >
+                        <input
+                          type="text"
+                          value={subtask.name || ""}
+                          onChange={(e) =>
+                            updateSubtask(index, "name", e.target.value)
+                          }
+                          className="flex-1 border-0 focus:ring-0 text-gray-600"
+                          placeholder="Subtask name"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeSubtask(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+
+                    {/* Add Subtask Button */}
+                    <button
+                      type="button"
+                      onClick={addSubtask}
+                      className="w-full h-16 flex items-center justify-center border-2 border-dashed border-gray-400 rounded-xl hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center justify-center">
+                        <div className="relative">
+                          <div className="w-1.5 h-8 bg-gray-500 rounded"></div>
+                          <div className="w-8 h-1.5 bg-gray-500 rounded absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Scrollbar styling - purely decorative */}
+                <div className="w-3 ml-3">
+                  <div className="w-2 h-full rounded-full bg-gray-200 mx-auto relative">
+                    <div className="absolute top-0 left-0 right-0 w-3 h-[90%] bg-gray-400 bg-opacity-60 rounded-full"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Form Actions - custom styled buttons */}
+            <div className="border-t border-gray-300 border-opacity-50 pt-4">
+              <div className="flex justify-center space-x-4 mt-2">
                 <button
                   type="button"
-                  onClick={handleAddSubtask}
-                  className="px-3 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  className="h-15 px-5 py-4 bg-red-100 text-red-700 font-medium rounded-xl flex items-center gap-4 hover:bg-red-200 transition-colors"
                 >
-                  Add
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-9 w-9"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-xl">Delete</span>
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-15 px-5 py-4 bg-green-100 text-green-700 font-medium rounded-xl flex items-center gap-4 hover:bg-green-200 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-7 w-7"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="text-xl">
+                    {isSubmitting
+                      ? "Saving..."
+                      : initialData.id
+                      ? "Save"
+                      : "Complete"}
+                  </span>
                 </button>
               </div>
-              <ul className="list-disc pl-5 max-h-40 overflow-y-auto">
-                {Array.isArray(formData.subtasks) &&
-                  formData.subtasks.map((task, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center mb-1"
-                    >
-                      <span className="truncate">{task}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveSubtask(index)}
-                        className="text-red-500 text-sm hover:underline"
-                      >
-                        Remove
-                      </button>
-                    </li>
-                  ))}
-              </ul>
             </div>
-          )}
-
-          {/* EXP Progress Bar for Subtasks */}
-          {isSubtask && (
-            <div>
-              <h3 className="text-lg font-bold mb-2">Progress</h3>
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  name="progress"
-                  min="0"
-                  max="100"
-                  value={formData.progress}
-                  onChange={handleProgressChange}
-                  className="w-full"
-                />
-                <span className="min-w-[40px] text-right">
-                  {formData.progress}%
-                </span>
-              </div>
-              <div className="w-full h-4 bg-gray-200 rounded-full mt-2">
-                <div
-                  className="h-full bg-yellow-500 rounded-full"
-                  style={{ width: `${formData.progress}%` }}
-                ></div>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-end gap-2 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-            >
-              {initialData.name ? "Save Changes" : "Add"}
-            </button>
           </div>
         </form>
       </div>
@@ -420,6 +417,9 @@ AddQuestForm.propTypes = {
   onClose: PropTypes.func.isRequired,
   initialData: PropTypes.object,
   isSubtask: PropTypes.bool,
+  isOpen: PropTypes.bool,
+  isSubmitting: PropTypes.bool,
+  error: PropTypes.string,
 };
 
 export default AddQuestForm;

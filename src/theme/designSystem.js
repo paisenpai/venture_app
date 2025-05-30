@@ -80,6 +80,14 @@ export const statusColors = {
   },
 };
 
+export const deadlineColors = {
+  overdue: { bg: "#E7BBBB", color: "#8D1616" },
+  urgent: { bg: "#FFE893", color: "#CAA004" },
+  soon: { bg: "#BEBBE7", color: "#1F168D" },
+  comfortable: { bg: "#BBD1E7", color: "#163A8D" },
+  none: { bg: "#E5E5E5", color: "#909090" },
+};
+
 export const transitions = {
   fast: "transition-all duration-150",
   normal: "transition-all duration-300",
@@ -98,8 +106,8 @@ export const shadows = {
 };
 
 export const boardSizes = {
-  width: "320px", // Fixed width for all boards
-  height: "220px", // Fixed height for all boards
+  width: "360px", // Updated to match QuestBoard
+  height: "240px", // Updated from 220px to 240px
 };
 
 export const borders = {
@@ -118,6 +126,8 @@ export const componentStyles = {
     icon: `p-2 ${borders.rounded} ${transitions.normal} hover:bg-gray-100 dark:hover:bg-gray-700`,
   },
   input: `block w-full px-4 py-2 ${borders.rounded} ${transitions.normal} bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-900/30 focus:ring-opacity-50 outline-none`,
+  select: `block w-full px-4 py-2 ${borders.rounded} ${transitions.normal} bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-900/30 focus:ring-opacity-50 outline-none`,
+  textarea: `block w-full px-4 py-2 ${borders.rounded} ${transitions.normal} bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring focus:ring-indigo-200 dark:focus:ring-indigo-900/30 focus:ring-opacity-50 outline-none`,
   label: `block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1`,
 };
 

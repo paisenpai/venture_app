@@ -8,7 +8,7 @@ import classNames from "classnames";
 const links = [
   { label: "Dashboard", type: "dashboard", path: "/" },
   { label: "Quests", type: "quest", path: "/quests" },
-  { label: "Achievements", type: "achievements", path: "/achievements" },
+  // Removed achievement link
   { label: "Progress", type: "progress", path: "/progress" },
   { label: "Character", type: "character", path: "/character" },
 ];

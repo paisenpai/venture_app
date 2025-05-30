@@ -1,13 +1,26 @@
-/* Import Typold font */
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Font declarations */
 @font-face {
   font-family: 'Typold';
+  src: local('Inter');
+  font-weight: 400 700;
+  font-display: swap;
 }
 
 /* Root variables for responsive design */
 :root {
-  --card-height: 240px;
-  --card-width: 280px;
+  --card-height: 160px;
+  --card-width: 320px;
+  --card-width-md: 360px;
+  --card-width-lg: 400px;
   --viewport-height: 100vh;
+  --quest-card-height: 160px;
+  --quest-card-width-sm: 320px;
+  --quest-card-width-md: 360px;
+  --quest-card-width-lg: 400px;
+  --quest-card-min-width: 280px;
 }
 
 /* Tailwind Base Layer */
@@ -17,24 +30,35 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Typold', system-ui, -apple-system, sans-serif;
+    font-family: 'Typold', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
   
   #root {
     height: 100%;
   }
-  
-  /* Additional base styles */
 }
 
 /* Tailwind Components Layer */
 @tailwind components;
 @layer components {
-  /* Use CSS variables for responsive card sizes */
+  /* Consistent board sizing using CSS variables */
   .quest-card {
     width: var(--card-width);
     height: var(--card-height);
-    min-height: 180px;
+    min-width: 280px;
+    flex-shrink: 0;
+  }
+  
+  @media (min-width: 768px) {
+    .quest-card {
+      width: var(--card-width-md);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .quest-card {
+      width: var(--card-width-lg);
+    }
   }
   
   .quest-container {
@@ -42,37 +66,62 @@
     height: var(--viewport-height);
     overflow-y: auto;
   }
+
+  /* Typography */
+  .typold-heading {
+    font-family: 'Typold', 'Inter', sans-serif;
+    font-weight: 700;
+  }
   
-  /* Consistent board sizing */
-  .quest-board-container {
-    width: 320px;
-    max-width: 320px;
-    flex-shrink: 0;
+  /* Section styling */
+  .section-counter {
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
   }
-
-  .quest-board {
-    width: 320px !important;
-    max-width: 320px !important;
-    min-width: 320px !important;
-  }
-
-  /* Additional component classes */
 }
 
 /* Tailwind Utilities Layer */
 @tailwind utilities;
 @layer utilities {
-  /* Additional utility classes */
+  /* Scrollbar styling unified */
+  .scrollbar-thin,
+  .hide-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e0 transparent;
+    -ms-overflow-style: none;
+  }
+  
+  .dark .scrollbar-thin,
+  .dark .hide-scrollbar {
+    scrollbar-color: #4a5568 transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 20px;
+  }
+  
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #4a5568;
+  }
+  
+  /* Hidden scrollbar */
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Animations */
 @keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -81,55 +130,10 @@
   }
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-.scrollbar-thin::-webkit-scrollbar {
-  height: 6px;
+/* Dark mode customizations */
+.dark .text-[#909090] {
+  color: #a0a0a0;
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #cbd5e0;
-  border-radius: 20px;
-}
-
-/* Dark mode */
-.dark .scrollbar-thin::-webkit-scrollbar-thumb {
-  background-color: #4a5568;
-}
-
-/* Hide scrollbar for Firefox */
-.scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e0 transparent;
-}
-
-.dark .scrollbar-thin {
-  scrollbar-color: #4a5568 transparent;
-}
-
-/* Hide scrollbar for IE, Edge */
-.scrollbar-thin {
-  -ms-overflow-style: none;
-}
-
-/* Hide scrollbar but maintain functionality */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, and Opera */
-}
-
-.hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-
-/* 
-Improvements:
-- Ensured Typold is the default font everywhere.
-- Used @tailwind base/components/utilities for proper layering.
-- Kept custom CSS minimal and utility-first.
-- Added font-display: swap for better font loading.
-- Removed redundant comments and ensured consistent formatting.
-*/
+/* Import additional stylesheets */
+@import "../../styles/QuestForm.css";

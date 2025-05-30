@@ -46,7 +46,7 @@ const MainLayout = () => {
         style={{
           height: windowHeight,
           maxHeight: windowHeight,
-          paddingLeft: "10%",
+          paddingLeft: "5%",
           paddingRight: "0%",
         }}
       >

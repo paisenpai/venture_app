@@ -16,24 +16,18 @@ export const initializeResponsiveVars = () => {
 
     // Height calculations
     if (vh <= 640) {
-      cardHeight = 180; // Small screens
+      cardHeight = 200; // Small screens (minimum viable height)
     } else if (vh <= 768) {
-      cardHeight = 220; // Medium screens
-    } else if (vh <= 1024) {
-      cardHeight = 240; // Large screens
+      cardHeight = 240; // Medium screens
     } else {
-      cardHeight = 260; // XL screens
+      cardHeight = 240; // Large screens
     }
 
     // Width calculations
     if (vw <= 640) {
-      cardWidth = Math.min(vw - 32, 280); // Small screens (full width minus margins)
-    } else if (vw <= 768) {
-      cardWidth = 260; // Medium screens
-    } else if (vw <= 1024) {
-      cardWidth = 280; // Large screens
+      cardWidth = Math.min(vw - 32, 340); // Small screens (full width minus margins)
     } else {
-      cardWidth = 300; // XL screens
+      cardWidth = 360; // Medium and larger screens
     }
 
     // Set CSS variables

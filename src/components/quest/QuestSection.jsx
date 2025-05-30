@@ -1,13 +1,13 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
-import QuestBoard from "./QuestBoard";
-import { transitions, shadows } from "../../styles/designSystem";
+import QuestCard from "./board/QuestCard";
+import SectionHeader from "../ui/SectionHeader";
 
 const QuestSection = ({
   title,
-  quests,
+  quests = [],
   subtasks = [],
-  showAddButton,
+  showAddButton = false,
   onAddQuest,
   onDeleteQuest,
   onEditQuest,
@@ -16,241 +16,206 @@ const QuestSection = ({
   onEditSubtask,
   onDeleteSubtask,
   onChangeSubtaskStatus,
+  className = "",
 }) => {
-  const scrollContainerRef = useRef(null);
-  const [showLeftScroll, setShowLeftScroll] = useState(false);
-  const [showRightScroll, setShowRightScroll] = useState(false);
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
-  // Combine all items for counter
-  const allItems = [...quests, ...subtasks];
-
-  // Check scroll position to determine if arrows should be shown
-  useEffect(() => {
-    if (!scrollContainerRef.current) return;
-
-    const checkScroll = () => {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setShowLeftScroll(scrollLeft > 5);
-      setShowRightScroll(scrollLeft < scrollWidth - clientWidth - 5);
-    };
-
-    // Initial check
-    checkScroll();
-
-    // Add scroll event listener
-    const scrollContainer = scrollContainerRef.current;
-    scrollContainer.addEventListener("scroll", checkScroll);
-
-    // Check if we need right scroll button on initial render
-    if (scrollContainer.scrollWidth > scrollContainer.clientWidth) {
-      setShowRightScroll(true);
+  // Toggle menu function
+  const toggleMenu = (id, buttonRef) => {
+    if (activeMenuId === id) {
+      setActiveMenuId(null);
+      return;
     }
 
-    return () => {
-      scrollContainer.removeEventListener("scroll", checkScroll);
-    };
-  }, [quests.length, subtasks.length]);
-
-  // Scroll handling functions
-  const handleScroll = (direction) => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 360; // A bit wider than the card width for better UX
-      const currentScroll = scrollContainerRef.current.scrollLeft;
-      scrollContainerRef.current.scrollTo({
-        left:
-          currentScroll + (direction === "left" ? -scrollAmount : scrollAmount),
-        behavior: "smooth",
+    if (buttonRef && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
       });
+    }
+    setActiveMenuId(id);
+  };
+
+  // Calculate total count for the section header (only count main quests)
+  const totalCount = quests.length + subtasks.length;
+
+  // Determine if section is empty (no quests and no add button)
+  const isEmpty =
+    quests.length === 0 && subtasks.length === 0 && !showAddButton;
+
+  // Determine section background color based on section type
+  const getSectionStyle = () => {
+    switch (title.toLowerCase()) {
+      case "available":
+        return "bg-blue-50/30 dark:bg-blue-900/10";
+      case "ongoing":
+        return "bg-yellow-50/30 dark:bg-yellow-900/10";
+      case "completed":
+        return "bg-green-50/30 dark:bg-green-900/10";
+      default:
+        return "bg-gray-50/50 dark:bg-gray-800/30";
     }
   };
 
   return (
-    <section className="mb-12 relative">
-      {/* Header with counter circle first, then title and line */}
-      <div className="flex items-center mb-4">
-        {/* Counter Circle - Now first element with pulsing animation for emphasis */}
-        <div className="bg-indigo-100 dark:bg-indigo-900/30 w-10 h-10 rounded-full flex items-center justify-center mr-3 relative">
-          <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">
-            {allItems.length}
-          </span>
-          {allItems.length > 0 && (
-            <span className="absolute w-full h-full rounded-full bg-indigo-500/20 dark:bg-indigo-500/30 animate-ping-slow"></span>
-          )}
+    <div
+      className={`quest-section p-6 rounded-lg ${getSectionStyle()} ${className}`}
+    >
+      <SectionHeader title={title} count={totalCount} />
+
+      {isEmpty ? (
+        <div className="flex items-center justify-center h-[220px] bg-white/60 dark:bg-gray-800/30 rounded-xl border border-dashed border-gray-300 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400">
+            No quests in this section
+          </p>
         </div>
+      ) : (
+        <div className="relative">
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="flex space-x-4 py-2">
+              {/* Add Quest Button */}
+              {showAddButton && (
+                <button
+                  onClick={onAddQuest}
+                  className="flex items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border-2 border-dashed border-gray-300 dark:border-gray-600 w-[320px] md:w-[360px] lg:w-[400px] h-[160px] min-w-[280px] flex-shrink-0"
+                >
+                  <div className="flex flex-col items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6 text-indigo-600 dark:text-indigo-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                      Add New Quest
+                    </span>
+                  </div>
+                </button>
+              )}
 
-        {/* Title with improved typography */}
-        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-          {title}
-        </h2>
+              {/* Quest Cards - Main Quests */}
+              {quests.map((quest) => (
+                <div key={quest.id} className="flex-shrink-0">
+                  <QuestCard
+                    id={quest.id}
+                    name={quest.name}
+                    category={quest.category}
+                    goal={quest.goal}
+                    dueDate={quest.dueDate}
+                    xp={quest.xp}
+                    priority={quest.priority}
+                    status={quest.status || "available"}
+                    progress={quest.progress || 0}
+                    daysLeft={quest.daysLeft}
+                    type="default"
+                    subtasks={quest.subtasks || []} // Still pass this for data purposes
+                    toggleMenu={toggleMenu}
+                    isMenuOpen={activeMenuId === quest.id}
+                    menuPosition={menuPosition}
+                    setActiveMenuId={setActiveMenuId}
+                    onEdit={() => onEditQuest(quest.id)}
+                    onDelete={() => onDeleteQuest(quest.id)}
+                    onChangeStatus={(newStatus) =>
+                      onChangeStatus(quest.id, newStatus)
+                    }
+                    onAddSubtask={() => onAddSubtask(quest.id)}
+                  />
+                </div>
+              ))}
 
-        {/* Line with gradient effect */}
-        <div className="flex-1 h-0.5 bg-gradient-to-r from-indigo-500 to-transparent ml-4"></div>
-      </div>
-
-      {/* Scroll navigation - enhanced with better visibility */}
-      <div className="relative">
-        {showLeftScroll && (
-          <div className="absolute -left-6 top-1/2 transform -translate-y-1/2 z-10">
-            <button
-              onClick={() => handleScroll("left")}
-              className={`p-2.5 rounded-full bg-white dark:bg-gray-700 ${shadows.md} ${transitions.normal} hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-              aria-label="Scroll left"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+              {/* Subtask Cards - Now as independent slates */}
+              {subtasks.map((subtask) => (
+                <div key={`subtask-${subtask.id}`} className="flex-shrink-0">
+                  <QuestCard
+                    id={subtask.id}
+                    name={subtask.name}
+                    category={subtask.category || "Subtask"}
+                    goal={
+                      subtask.goal ||
+                      `Part of: ${subtask.parentName || "Parent Task"}`
+                    }
+                    xp={subtask.xp || 0}
+                    priority={subtask.priority || 1}
+                    status={subtask.status || "available"}
+                    progress={subtask.progress || 0}
+                    daysLeft={subtask.daysLeft}
+                    type="subtask"
+                    toggleMenu={toggleMenu}
+                    isMenuOpen={activeMenuId === `subtask-${subtask.id}`}
+                    menuPosition={menuPosition}
+                    setActiveMenuId={setActiveMenuId}
+                    onEdit={() => onEditSubtask(subtask.parentId, subtask.id)}
+                    onDelete={() =>
+                      onDeleteSubtask(subtask.parentId, subtask.id)
+                    }
+                    onChangeStatus={(newStatus) =>
+                      onChangeSubtaskStatus(
+                        subtask.parentId,
+                        subtask.id,
+                        newStatus
+                      )
+                    }
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        )}
 
-        {showRightScroll && (
-          <div className="absolute -right-6 top-1/2 transform -translate-y-1/2 z-10">
-            <button
-              onClick={() => handleScroll("right")}
-              className={`p-2.5 rounded-full bg-white dark:bg-gray-700 ${shadows.md} ${transitions.normal} hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
-              aria-label="Scroll right"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-indigo-600 dark:text-indigo-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
-        )}
-
-        {/* Enhanced scrollable container */}
-        <div
-          ref={scrollContainerRef}
-          className="flex overflow-x-auto py-1 pb-6 gap-6 hide-scrollbar"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          {/* Add button - ensure fixed width container */}
-          {showAddButton && (
-            <div
-              className="flex-shrink-0"
-              style={{ width: "320px", maxWidth: "320px" }}
-            >
-              <QuestBoard type="add" onAddQuest={onAddQuest} />
-            </div>
-          )}
-
-          {/* Quest boards - ensure fixed width container */}
-          {quests.map((quest) => (
-            <div
-              key={quest.id}
-              className="flex-shrink-0"
-              style={{ width: "320px", maxWidth: "320px" }}
-            >
-              <QuestBoard
-                {...quest}
-                onDeleteQuest={() => onDeleteQuest(quest.id)}
-                onEditQuest={() => onEditQuest(quest.id)}
-                onChangeStatus={(status) => onChangeStatus(quest.id, status)}
-                onAddSubtask={() =>
-                  onAddSubtask(quest.id, { name: "New subtask", progress: 0 })
-                }
-              />
-            </div>
-          ))}
-
-          {/* Subtask boards - ensure fixed width container */}
-          {subtasks.map((subtask) => (
-            <div
-              key={`subtask-${subtask.id}`}
-              className="flex-shrink-0"
-              style={{ width: "320px", maxWidth: "320px" }}
-            >
-              <QuestBoard
-                {...subtask}
-                type="subtask"
-                onDeleteQuest={() =>
-                  onDeleteSubtask(subtask.parentId, subtask.id)
-                }
-                onEditQuest={() => onEditSubtask(subtask.parentId, subtask.id)}
-                onChangeStatus={(status) =>
-                  onChangeSubtaskStatus &&
-                  onChangeSubtaskStatus(subtask.parentId, subtask.id, status)
-                }
-              />
-            </div>
-          ))}
-
-          {allItems.length === 0 && !showAddButton && (
-            <div className="text-gray-500 dark:text-gray-400 w-full text-center p-6">
-              No {title.toLowerCase()} quests available.
-            </div>
-          )}
+          {/* Optional: Add scroll indicators */}
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-gradient-to-l from-white dark:from-gray-900 to-transparent w-12 h-24 pointer-events-none"></div>
         </div>
+      )}
 
-        {/* Enhanced scroll indicator with animated gradient */}
-        {allItems.length > 0 && (
-          <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full mt-2 overflow-hidden">
-            <div
-              className="absolute h-1.5 bg-gradient-to-r from-indigo-500 via-indigo-400 to-indigo-500 rounded-full transform transition-all duration-300"
-              style={{
-                width: scrollContainerRef.current
-                  ? `${Math.min(
-                      100,
-                      (scrollContainerRef.current.clientWidth /
-                        scrollContainerRef.current.scrollWidth) *
-                        100
-                    )}%`
-                  : "20%",
-                left: scrollContainerRef.current
-                  ? `${
-                      (scrollContainerRef.current.scrollLeft /
-                        scrollContainerRef.current.scrollWidth) *
-                      100
-                    }%`
-                  : "0%",
-              }}
-            />
-          </div>
-        )}
-      </div>
-    </section>
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+  .hide-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    height: 6px;
+  }
+  .hide-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+  .hide-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+  `,
+        }}
+      />
+    </div>
   );
 };
 
 QuestSection.propTypes = {
   title: PropTypes.string.isRequired,
-  quests: PropTypes.array.isRequired,
+  quests: PropTypes.array,
   subtasks: PropTypes.array,
   showAddButton: PropTypes.bool,
-  onAddQuest: PropTypes.func.isRequired,
-  onDeleteQuest: PropTypes.func.isRequired,
-  onEditQuest: PropTypes.func.isRequired,
-  onChangeStatus: PropTypes.func.isRequired,
-  onAddSubtask: PropTypes.func.isRequired,
-  onEditSubtask: PropTypes.func.isRequired,
-  onDeleteSubtask: PropTypes.func.isRequired,
+  onAddQuest: PropTypes.func,
+  onDeleteQuest: PropTypes.func,
+  onEditQuest: PropTypes.func,
+  onChangeStatus: PropTypes.func,
+  onAddSubtask: PropTypes.func,
+  onEditSubtask: PropTypes.func,
+  onDeleteSubtask: PropTypes.func,
   onChangeSubtaskStatus: PropTypes.func,
-};
-
-QuestSection.defaultProps = {
-  showAddButton: false,
-  subtasks: [],
+  className: PropTypes.string,
 };
 
 export default QuestSection;
