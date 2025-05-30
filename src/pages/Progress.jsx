@@ -11,7 +11,7 @@ import SwordIcon from "../assets/icons/Sword.svg";
 import AxeIcon from "../assets/icons/Axe.svg";
 import WandIcon from "../assets/icons/Wand.svg";
 
-// Create SVG component for StreakFlame
+// SVG component for StreakFlame
 const StreakFlame = ({ className, title, streakCount = 7 }) => (
   <div className={`relative ${className}`}>
     <svg
@@ -114,7 +114,6 @@ const Progress = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null);
 
-  // Add a ref for the settings button to improve positioning
   const settingsBtnRef = useRef(null);
 
   useEffect(() => {
@@ -149,17 +148,14 @@ const Progress = () => {
 
   // First, fix the handleMenuToggle function to handle clicks more intelligently
   const handleMenuToggle = (index, e) => {
-    // Prevent event from bubbling to document click handler
     if (e) e.stopPropagation();
 
     // Toggle menu or switch to different menu
     setActiveMenu(activeMenu === index ? null : index);
   };
 
-  // Then, improve the click-outside handler to be more precise
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Only close if clicking outside the menu and its toggle button
       if (
         activeMenu !== null &&
         !event.target.closest(".goal-menu-container") &&
@@ -199,7 +195,7 @@ const Progress = () => {
 
   // Main container - Add min-height to ensure it takes full screen height
   return (
-    <div className="container-fluid w-full px-4 py-6 min-h-screen flex flex-col">
+    <div className="container-fluid w-full pl-[5%] pr-0 py-6 min-h-screen flex flex-col">
       {/* PageHeader remains the same */}
       <PageHeader title="Progress" variant="standard" size="large">
         <div className="relative">

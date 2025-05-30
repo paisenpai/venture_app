@@ -70,7 +70,7 @@ const Dashboard = () => {
     "bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg border border-gray-200 dark:border-gray-700 transition-all";
 
   return (
-    <div className="w-full px-4 py-4 bg-white dark:bg-gray-900">
+    <div className="w-full px-4 py-4 dark:bg-gray-900">
       <h1 className="text-3xl font-bold text-indigo-900 dark:text-indigo-300 pb-4 border-b border-gray-200 dark:border-gray-800">
         Welcome Back, Adventurer!
       </h1>

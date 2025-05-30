@@ -17,8 +17,6 @@ const MainLayout = () => {
     // Add event listeners
     window.addEventListener("resize", updateHeight);
 
-    // Some browsers fire resize on zoom
-    // For browsers that don't, we can use the wheel event with ctrl/cmd key
     window.addEventListener("wheel", (e) => {
       if (e.ctrlKey || e.metaKey) {
         // Small delay to ensure zoom completes
@@ -46,8 +44,8 @@ const MainLayout = () => {
         style={{
           height: windowHeight,
           maxHeight: windowHeight,
-          paddingLeft: "5%",
-          paddingRight: "0%",
+          paddingLeft: "10%",
+          paddingRight: "2%",
         }}
       >
         <Outlet />

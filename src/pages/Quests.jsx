@@ -8,7 +8,7 @@ import React, {
   lazy,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import QuestSection from "../components/quest/QuestSection";
+import QuestBoard from "../components/quest/board/QuestBoard";
 import SettingsMenu from "../components/quest/settings/SettingsMenu";
 import AddQuestForm from "../components/forms/AddQuestForm";
 import useLevelSystem from "../features/leveling/useLevelSystem";
@@ -391,7 +391,7 @@ const Quests = () => {
         return (
           <div className="space-y-4">
             <ErrorBoundary>
-              <QuestSection
+              <QuestBoard
                 title="Available"
                 quests={questData.availableQuests.map((quest) => ({
                   ...quest,
@@ -412,7 +412,7 @@ const Quests = () => {
             </ErrorBoundary>
 
             <ErrorBoundary>
-              <QuestSection
+              <QuestBoard
                 title="Ongoing"
                 quests={questData.ongoingQuests}
                 subtasks={questData.ongoingSubtasks}
@@ -429,7 +429,7 @@ const Quests = () => {
             </ErrorBoundary>
 
             <ErrorBoundary>
-              <QuestSection
+              <QuestBoard
                 title="Completed"
                 quests={questData.completedQuests}
                 subtasks={questData.completedSubtasks}
