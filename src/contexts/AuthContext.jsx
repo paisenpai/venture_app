@@ -26,75 +26,10 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null)
       setIsAuthenticated(!!session?.user)
       setLoading(false)
-
-      // Create user profile if it's a new user
-      if (event === "SIGNED_IN" && session?.user) {
-        await createUserProfile(session.user)
-      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
-
-  // Create user profile and stats when they first sign up
-  const createUserProfile = async (user) => {
-    try {
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .single()
-
-      if (!existingProfile) {
-        // Create profile
-        await supabase.from("profiles").insert({
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "New User",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-
-        // Create user stats
-        await supabase.from("user_stats").insert({
-          user_id: user.id,
-          current_xp: 0,
-          level: 1,
-          current_streak: 0,
-          max_streak: 0,
-          tasks_completed: 0,
-          total_xp_gained: 0,
-          last_active_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        })
-
-        // Create character stats
-        await supabase.from("character_stats").insert({
-          user_id: user.id,
-          strength: 1,
-          intelligence: 1,
-          wisdom: 1,
-          charisma: 1,
-          agility: 1,
-          endurance: 1,
-          available_stat_points: 0,
-          total_stat_points: 6,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-
-        // Create user avatar
-        await supabase.from("user_avatars").insert({
-          user_id: user.id,
-          current_theme: "default",
-          unlocked_themes: ["default"],
-          last_updated: new Date().toISOString(),
-        })
-      }
-    } catch (error) {
-      console.error("Error creating user profile:", error)
-    }
-  }
 
   // Google OAuth login
   const signInWithGoogle = async () => {
@@ -154,6 +89,13 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
+      // Handle demo user logout
+      if (user?.id === "demo-user-123") {
+        setUser(null)
+        setIsAuthenticated(false)
+        return
+      }
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {
@@ -171,11 +113,23 @@ export const AuthProvider = ({ children }) => {
         options: {
           data: {
             full_name: userData.username || userData.email.split("@")[0],
+            username: userData.username,
+            birthdate: userData.birthdate,
           },
         },
       })
 
       if (error) throw error
+
+      // Check if user needs to confirm their email
+      if (data?.user && !data?.session) {
+        return {
+          success: true,
+          data,
+          message: "Please check your email to confirm your account.",
+        }
+      }
+
       return { success: true, data }
     } catch (error) {
       console.error("Registration error:", error)

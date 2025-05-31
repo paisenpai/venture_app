@@ -1,40 +1,57 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import FullLogo from "../assets/icons/FullLogo.svg";
-import ViewIcon from "../assets/icons/view.svg";
-import CalendarIcon from "../assets/icons/calendar.svg";
+"use client"
+
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useAuth } from "../contexts/AuthContext"
+import FullLogo from "../assets/icons/FullLogo.svg"
+import ViewIcon from "../assets/icons/view.svg"
+import CalendarIcon from "../assets/icons/calendar.svg"
 
 const Register = () => {
-  const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate()
+  const { register } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
     birthdate: "",
-  });
+  })
 
   const handleChange = (e) => {
     setForm({
       ...form,
       [e.target.name]: e.target.value,
-    });
-  };
+    })
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
+    e.preventDefault()
+    setIsLoading(true)
+    setError("")
 
-    // Replace backend registration with frontend-only simulation
-    setTimeout(() => {
-      // Simply navigate to dashboard after a delay to simulate successful registration
-      navigate("/dashboard");
-      setIsLoading(false);
-    }, 1000);
-  };
+    try {
+      const { success, error } = await register({
+        email: form.email,
+        password: form.password,
+        username: form.username,
+        birthdate: form.birthdate,
+      })
+
+      if (success) {
+        navigate("/dashboard")
+      } else {
+        setError(error || "Registration failed. Please try again.")
+      }
+    } catch (err) {
+      console.error("Registration error:", err)
+      setError("An unexpected error occurred. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="w-full min-h-screen relative overflow-hidden bg-white">
@@ -52,7 +69,7 @@ const Register = () => {
         <div className="max-w-7xl w-full px-6 flex items-center relative">
           {/* Logo positioned to left side with padding */}
           <div className="pl-2">
-            <img src={FullLogo} alt="QuestLab" className="h-12 md:h-16" />
+            <img src={FullLogo || "/placeholder.svg"} alt="QuestLab" className="h-12 md:h-16" />
           </div>
         </div>
       </header>
@@ -67,9 +84,7 @@ const Register = () => {
             <h1 className="text-4xl md:text-6xl font-extrabold text-indigo-900 leading-tight [text-shadow:_1px_2px_2px_rgb(23_18_92_/_0.44)]">
               Ready to Begin
             </h1>
-            <h1 className="text-4xl md:text-6xl font-extrabold text-indigo-900 leading-tight mt-2">
-              Your Adventure?
-            </h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold text-indigo-900 leading-tight mt-2">Your Adventure?</h1>
             <p className="mt-6 text-xl font-medium text-indigo-900">
               Create your adventurer profile and start conquering your tasks
             </p>
@@ -84,16 +99,10 @@ const Register = () => {
             </div>
           )}
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-4 bg-white/80 p-6 rounded-xl shadow-md"
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-white/80 p-6 rounded-xl shadow-md">
             {/* Email field */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="email"
-                className="text-indigo-900 text-base font-normal"
-              >
+              <label htmlFor="email" className="text-indigo-900 text-base font-normal">
                 Email
               </label>
               <input
@@ -109,10 +118,7 @@ const Register = () => {
             </div>
             {/* Password field with toggle icon */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="text-indigo-900 text-base font-normal"
-              >
+              <label htmlFor="password" className="text-indigo-900 text-base font-normal">
                 Password
               </label>
               <div className="relative">
@@ -131,20 +137,13 @@ const Register = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 flex items-center justify-center w-10"
                 >
-                  <img
-                    className="w-5 h-5"
-                    src={ViewIcon}
-                    alt="Toggle password"
-                  />
+                  <img className="w-5 h-5" src={ViewIcon || "/placeholder.svg"} alt="Toggle password" />
                 </button>
               </div>
             </div>
             {/* Username field */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="username"
-                className="text-indigo-900 text-base font-normal"
-              >
+              <label htmlFor="username" className="text-indigo-900 text-base font-normal">
                 Username
               </label>
               <input
@@ -160,10 +159,7 @@ const Register = () => {
             </div>
             {/* Birthdate field with calendar icon */}
             <div className="flex flex-col gap-2">
-              <label
-                htmlFor="birthdate"
-                className="text-indigo-900 text-base font-normal"
-              >
+              <label htmlFor="birthdate" className="text-indigo-900 text-base font-normal">
                 Birthdate
               </label>
               <div className="relative">
@@ -172,7 +168,7 @@ const Register = () => {
                   type="text"
                   onFocus={(e) => (e.target.type = "date")}
                   onBlur={(e) => {
-                    if (!e.target.value) e.target.type = "text";
+                    if (!e.target.value) e.target.type = "text"
                   }}
                   name="birthdate"
                   value={form.birthdate}
@@ -182,7 +178,7 @@ const Register = () => {
                   className="w-full h-11 px-3 py-2 bg-white rounded-lg shadow-[0px_1px_2px_0px_rgba(10,13,18,0.05)] border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 pr-12 appearance-none"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center justify-center w-10 pointer-events-none">
-                  <img src={CalendarIcon} alt="Calendar" className="w-5 h-5" />
+                  <img src={CalendarIcon || "/placeholder.svg"} alt="Calendar" className="w-5 h-5" />
                 </div>
               </div>
             </div>
@@ -222,13 +218,8 @@ const Register = () => {
               </button>
 
               <p className="text-center">
-                <span className="text-indigo-900 text-xs font-light">
-                  Already have an account?{" "}
-                </span>
-                <Link
-                  to="/login"
-                  className="text-indigo-900 text-xs font-bold hover:text-indigo-700"
-                >
+                <span className="text-indigo-900 text-xs font-light">Already have an account? </span>
+                <Link to="/login" className="text-indigo-900 text-xs font-bold hover:text-indigo-700">
                   Sign-in
                 </Link>
               </p>
@@ -237,7 +228,7 @@ const Register = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Register;
+export default Register

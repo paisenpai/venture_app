@@ -1,10 +1,10 @@
 /* Import fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 /* Font declarations */
 @font-face {
-  font-family: 'Typold';
-  src: local('Inter');
+  font-family: "Typold";
+  src: local("Inter");
   font-weight: 400 700;
   font-display: swap;
 }
@@ -26,13 +26,14 @@
 /* Tailwind Base Layer */
 @tailwind base;
 @layer base {
-  html, body {
+  html,
+  body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: 'Typold', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: "Typold", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  
+
   #root {
     height: 100%;
   }
@@ -48,19 +49,19 @@
     min-width: 280px;
     flex-shrink: 0;
   }
-  
+
   @media (min-width: 768px) {
     .quest-card {
       width: var(--card-width-md);
     }
   }
-  
+
   @media (min-width: 1024px) {
     .quest-card {
       width: var(--card-width-lg);
     }
   }
-  
+
   .quest-container {
     max-height: var(--viewport-height);
     height: var(--viewport-height);
@@ -69,10 +70,10 @@
 
   /* Typography */
   .typold-heading {
-    font-family: 'Typold', 'Inter', sans-serif;
+    font-family: "Typold", "Inter", sans-serif;
     font-weight: 700;
   }
-  
+
   /* Section styling */
   .section-counter {
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
@@ -89,29 +90,29 @@
     scrollbar-color: #cbd5e0 transparent;
     -ms-overflow-style: none;
   }
-  
+
   .dark .scrollbar-thin,
   .dark .hide-scrollbar {
     scrollbar-color: #4a5568 transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #cbd5e0;
     border-radius: 20px;
   }
-  
+
   .dark .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: #4a5568;
   }
-  
+
   /* Hidden scrollbar */
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
@@ -120,8 +121,12 @@
 
 /* Animations */
 @keyframes logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -135,5 +140,55 @@
   color: #a0a0a0;
 }
 
-/* Import additional stylesheets */
-@import "../../styles/QuestForm.css";
+/* Quest Form Styles - Inline instead of import */
+.quest-form {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.quest-form-field {
+  margin-bottom: 1rem;
+}
+
+.quest-form-label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
+
+.quest-form-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.quest-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.quest-form-button {
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.quest-form-button:hover {
+  background-color: #2563eb;
+}
+
+.quest-form-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
