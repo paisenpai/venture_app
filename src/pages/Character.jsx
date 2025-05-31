@@ -31,32 +31,45 @@ const Character = () => {
         className="mb-2 pb-1 border-b border-gray-200 dark:border-gray-700"
       />
 
-      {/* Character Profile Section */}
-      <div className="mb-8 pb-3">
-        <div className="flex items-start gap-4">
-          <AvatarPlaceholder />
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold text-indigo-800 dark:text-indigo-300 mb-4">
-              {characterData.username}
-            </h2>
+      {/* Character Profile Section - Much Larger */}
+      <div className="mb-10">
+        <div className="flex items-center gap-8">
+          {/* Much Larger Avatar */}
+          <div className="w-36 h-36 rounded-full overflow-hidden border-3 border-pink-300">
+            <img
+              src="https://placehold.co/144x144"
+              alt="User Avatar"
+              className="w-full h-full object-cover"
+            />
+          </div>
 
-            {/* Stats with reduced gap between labels and values */}
-            <div className="flex flex-col gap-y-1">
-              <div className="flex items-center">
-                <span className="text-grey-700 dark:text-grey-400 text-lg w-20">
-                  Total XP
-                </span>
-                <span className="text-indigo-900 dark:text-indigo-300 text-lg font-bold">
-                  {characterData.totalXP}
-                </span>
-              </div>
-              <div className="flex items-center">
-                <span className="text-grey-700 dark:text-grey-400 text-lg w-20">
-                  Level
-                </span>
-                <span className="text-indigo-900 dark:text-indigo-300 text-lg font-bold">
-                  {characterData.level}
-                </span>
+          {/* Much Larger info container */}
+          <div className="flex-1 h-36 flex flex-col pl-6">
+            {/* Frame that matches larger avatar height */}
+            <div className="h-36 w-full flex flex-col justify-between py-4">
+              {/* Username */}
+              <h2 className="text-2xl font-bold text-indigo-800 dark:text-indigo-300">
+                {characterData.username}
+              </h2>
+
+              {/* Stats - Two-row layout with right padding */}
+              <div className="flex flex-col gap-y-2 pr-[8%]">
+                <div className="flex items-center">
+                  <span className="text-grey-700 dark:text-grey-400 text-lg w-32 pr-4">
+                    TOTAL XP
+                  </span>
+                  <span className="text-indigo-900 dark:text-indigo-300 text-lg font-bold">
+                    {characterData.totalXP}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-grey-700 dark:text-grey-400 text-lg w-32 pr-4">
+                    Level
+                  </span>
+                  <span className="text-indigo-900 dark:text-indigo-300 text-lg font-bold">
+                    {characterData.level}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -72,10 +85,27 @@ const Character = () => {
           <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {characterData.achievements.map((achievement) => (
-            <AchievementCard key={achievement.id} achievement={achievement} />
-          ))}
+        <div className="grid grid-rows-2 auto-cols-max gap-3 overflow-x-auto pb-4">
+          <div className="flex gap-3">
+            {characterData.achievements
+              .slice(0, Math.ceil(characterData.achievements.length / 2))
+              .map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                />
+              ))}
+          </div>
+          <div className="flex gap-3">
+            {characterData.achievements
+              .slice(Math.ceil(characterData.achievements.length / 2))
+              .map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                />
+              ))}
+          </div>
         </div>
       </div>
     </div>

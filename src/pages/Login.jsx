@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 "use client"
 
 import { useState, useEffect } from "react"
@@ -23,6 +24,23 @@ function Login() {
       navigate("/dashboard")
     }
   }, [isAuthenticated, navigate])
+=======
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import FullLogo from "../assets/icons/FullLogo.svg"; // Import the SVG logo
+import Google from "../assets/icons/Google.svg"; // Import Google SVG
+
+function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+>>>>>>> Stashed changes
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -63,6 +81,7 @@ function Login() {
   }
 
   const handleDemoLogin = async () => {
+<<<<<<< Updated upstream
     setIsLoading(true)
     setError("")
 
@@ -70,6 +89,28 @@ function Login() {
       const result = await login("demo@example.com", "demopassword")
       if (result.success) {
         navigate("/dashboard")
+=======
+    console.log("Demo login initiated");
+    setIsDemoLoading(true);
+    setError("");
+
+    try {
+      // Use predefined demo credentials
+      const demoEmail = "demo@example.com";
+      const demoPassword = "demopassword";
+
+      console.log("Attempting login with demo credentials");
+
+      // Call the actual login function with demo credentials
+      const success = await login(demoEmail, demoPassword);
+
+      console.log("Demo login result:", success);
+
+      if (success) {
+        console.log("Demo login successful, navigating to dashboard");
+        // Add a small delay to allow state updates to complete
+        setTimeout(() => navigate("/dashboard"), 100);
+>>>>>>> Stashed changes
       } else {
         setError("Demo login failed. Please try again.")
       }
@@ -88,6 +129,7 @@ function Login() {
       <div className="w-[829px] h-[983px] left-[-20%] top-[60%] absolute bg-gradient-to-b from-indigo-900 to-purple-700/60 blur-[50px] -z-10" />
       <div className="w-[802px] h-[1069px] left-[70%] top-[80%] absolute bg-gradient-to-b from-green-400 to-green-300/50 blur-[100px] -z-10" />
 
+<<<<<<< Updated upstream
       {/* Header */}
       <header className="w-full py-8 px-4 relative bg-white bg-opacity-70 shadow-md z-10">
         <div className="max-w-7xl mx-auto flex flex-col items-center">
@@ -100,6 +142,18 @@ function Login() {
               />
             </div>
             <img className="h-10" src={placeholderLogoText || "/placeholder.svg"} alt="QuestLab" />
+=======
+      {/* Section 1: Top logo section with large title area - UPDATED */}
+      <header className="w-full py-8 px-4 relative z-10">
+        {/* Blurred frame with low opacity */}
+        <div className="absolute inset-0 bg-white bg-opacity-40 backdrop-blur-sm shadow-md"></div>
+
+        {/* Content container */}
+        <div className="max-w-7xl w-full px-6 flex items-center relative">
+          {/* Logo positioned to left side with padding */}
+          <div className="pl-2">
+            <img src={FullLogo} alt="QuestLab" className="h-12 md:h-16" />
+>>>>>>> Stashed changes
           </div>
         </div>
       </header>
@@ -109,11 +163,29 @@ function Login() {
         {/* Left column: Tagline */}
         <div className="w-full md:w-1/2 flex flex-col justify-center">
           <div className="max-w-lg">
+<<<<<<< Updated upstream
             <h2 className="text-4xl md:text-6xl font-extrabold text-indigo-900 [text-shadow:_1px_2px_2px_rgb(23_18_92_/_0.44)]">
               Ready to slay <br />
               your next <span className="text-indigo-700">Quest</span>?
             </h2>
             <p className="text-xl font-medium text-indigo-900 mt-6">Sign in to continue your productivity adventure</p>
+=======
+            <div className="w-[650px] h-40 justify-center">
+              <span className="text-indigo-900 text-6xl font-extrabold font-['Typold'] [text-shadow:_1px_2px_2px_rgb(23_18_92_/_0.44)]">
+                Ready to slay <br />
+                your next{" "}
+              </span>
+              <span className="text-indigo-700 text-6xl font-extrabold font-['Typold'] [text-shadow:_1px_2px_2px_rgb(23_18_92_/_0.44)]">
+                Quest
+              </span>
+              <span className="text-indigo-900 text-6xl font-extrabold font-['Typold'] [text-shadow:_1px_2px_2px_rgb(23_18_92_/_0.44)]">
+                ?
+              </span>
+            </div>
+            <p className="text-xl font-medium text-indigo-900 mt-2">
+              Sign in to continue your productivity adventure
+            </p>
+>>>>>>> Stashed changes
           </div>
         </div>
 
@@ -202,12 +274,13 @@ function Login() {
               </button>
 
               {/* Divider */}
-              <div className="flex items-center gap-4">
-                <div className="h-0.5 bg-zinc-200 flex-grow"></div>
-                <p className="text-zinc-400 text-base font-bold">or</p>
-                <div className="h-0.5 bg-zinc-200 flex-grow"></div>
+              <div className="flex items-center gap-4 my-2">
+                <div className="h-0.5 bg-gray-300 flex-grow"></div>
+                <p className="text-gray-500 text-base font-bold px-2">or</p>
+                <div className="h-0.5 bg-gray-300 flex-grow"></div>
               </div>
 
+<<<<<<< Updated upstream
               {/* Google OAuth button */}
               <button
                 type="button"
@@ -235,6 +308,30 @@ function Login() {
                 </svg>
                 <span className="text-indigo-900 text-sm font-medium">
                   {isGoogleLoading ? "Signing in..." : "Continue with Google"}
+=======
+              {/* Social login options - Only Google now */}
+              <div className="flex flex-col gap-4">
+                <p className="text-center text-indigo-900 text-xs font-normal">
+                  Sign in with
+                </p>
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={isLoading || isDemoLoading}
+                  className="h-11 px-3 py-2 bg-white rounded-xl outline outline-1 outline-offset-[-1px] outline-zinc-300 flex justify-center items-center gap-2 hover:bg-gray-50"
+                >
+                  <img className="w-6 h-6" src={Google} alt="Google" />
+                  <span className="text-indigo-900 text-sm font-medium">
+                    Google
+                  </span>
+                </button>
+              </div>
+
+              {/* Register link */}
+              <p className="text-center">
+                <span className="text-indigo-900 text-xs font-light">
+                  Don't have an account?{" "}
+>>>>>>> Stashed changes
                 </span>
               </button>
 
