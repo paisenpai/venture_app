@@ -1,133 +1,190 @@
-// Authentication context to manage user state and authentication actions
-// This context will provide authentication state and functions to the rest of the app
-// such as login, logout, and register.
+"use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react"
+import { supabase } from "../lib/supabase"
 
-// Create the auth context
-const AuthContext = createContext();
+const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   // Check for existing auth on initial load
   useEffect(() => {
-    // Check if user is already authenticated (e.g., from localStorage)
-    const token = localStorage.getItem("authToken");
-    const userData = localStorage.getItem("userData");
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setIsAuthenticated(!!session?.user)
+      setLoading(false)
+    })
 
-    if (token) {
-      setIsAuthenticated(true);
-      setUser(userData ? JSON.parse(userData) : null);
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setUser(session?.user ?? null)
+      setIsAuthenticated(!!session?.user)
+      setLoading(false)
+
+      // Create user profile if it's a new user
+      if (event === "SIGNED_IN" && session?.user) {
+        await createUserProfile(session.user)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  // Create user profile and stats when they first sign up
+  const createUserProfile = async (user) => {
+    try {
+      // Check if profile already exists
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .single()
+
+      if (!existingProfile) {
+        // Create profile
+        await supabase.from("profiles").insert({
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "New User",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+
+        // Create user stats
+        await supabase.from("user_stats").insert({
+          user_id: user.id,
+          current_xp: 0,
+          level: 1,
+          current_streak: 0,
+          max_streak: 0,
+          tasks_completed: 0,
+          total_xp_gained: 0,
+          last_active_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        })
+
+        // Create character stats
+        await supabase.from("character_stats").insert({
+          user_id: user.id,
+          strength: 1,
+          intelligence: 1,
+          wisdom: 1,
+          charisma: 1,
+          agility: 1,
+          endurance: 1,
+          available_stat_points: 0,
+          total_stat_points: 6,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+
+        // Create user avatar
+        await supabase.from("user_avatars").insert({
+          user_id: user.id,
+          current_theme: "default",
+          unlocked_themes: ["default"],
+          last_updated: new Date().toISOString(),
+        })
+      }
+    } catch (error) {
+      console.error("Error creating user profile:", error)
     }
+  }
 
-    setLoading(false);
-  }, []);
+  // Google OAuth login
+  const signInWithGoogle = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+        },
+      })
 
-  // Login function with guaranteed demo login support
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      console.error("Google sign in error:", error)
+      return { success: false, error: error.message }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Email/password login
   const login = async (email, password) => {
     try {
-      console.log("Login attempt with:", email);
-      setLoading(true);
+      setLoading(true)
 
       // Special handling for demo user
       if (email === "demo@example.com" && password === "demopassword") {
-        console.log("Demo login credentials recognized");
-
-        // Create demo user data
-        const demoUserData = {
+        // For demo, we'll create a mock session
+        const demoUser = {
           id: "demo-user-123",
           email: "demo@example.com",
-          name: "Demo User",
-          role: "user",
-        };
+          user_metadata: { full_name: "Demo User" },
+        }
 
-        // Store auth info
-        localStorage.setItem("authToken", "demo-token-123456");
-        localStorage.setItem("userData", JSON.stringify(demoUserData));
-
-        // Update state
-        setIsAuthenticated(true);
-        setUser(demoUserData);
-
-        return true;
+        setUser(demoUser)
+        setIsAuthenticated(true)
+        return { success: true }
       }
 
-      // Regular login logic for other users
-      if (email.length > 3) {
-        // Simulate successful login
-        const userData = {
-          id: `user-${Date.now()}`,
-          email: email,
-          name: email.split("@")[0],
-          role: "user",
-        };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-        // Store auth info
-        localStorage.setItem("authToken", `token-${Date.now()}`);
-        localStorage.setItem("userData", JSON.stringify(userData));
-
-        // Update state
-        setIsAuthenticated(true);
-        setUser(userData);
-
-        return true;
-      }
-
-      return false;
+      if (error) throw error
+      return { success: true }
     } catch (error) {
-      console.error("Login error:", error);
-      return false;
+      console.error("Login error:", error)
+      return { success: false, error: error.message }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Logout function
-  const logout = () => {
-    // Clear auth data
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("userData");
-
-    // Reset state
-    setIsAuthenticated(false);
-    setUser(null);
-  };
+  const logout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
+  }
 
   // Register function
   const register = async (userData) => {
     try {
-      // For demo purposes - in a real app, you would call your API
-      setLoading(true);
-
-      // Simulate successful registration
-      const newUser = {
-        id: `user-${Date.now()}`,
+      setLoading(true)
+      const { data, error } = await supabase.auth.signUp({
         email: userData.email,
-        name: userData.username || userData.email.split("@")[0],
-        role: "user",
-      };
+        password: userData.password,
+        options: {
+          data: {
+            full_name: userData.username || userData.email.split("@")[0],
+          },
+        },
+      })
 
-      // Store auth info
-      localStorage.setItem("authToken", `token-${Date.now()}`);
-      localStorage.setItem("userData", JSON.stringify(newUser));
-
-      // Update state
-      setIsAuthenticated(true);
-      setUser(newUser);
-
-      return { success: true };
+      if (error) throw error
+      return { success: true, data }
     } catch (error) {
-      console.error("Registration error:", error);
-      return { success: false, error: "Registration failed" };
+      console.error("Registration error:", error)
+      return { success: false, error: error.message }
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  // Expose the auth context value
   const value = {
     isAuthenticated,
     user,
@@ -135,16 +192,16 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     register,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Custom hook for using auth context
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    signInWithGoogle,
   }
-  return context;
-};
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}

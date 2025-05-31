@@ -1,14 +1,16 @@
-import { useEffect } from "react";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import AppRoutes from "./routes/AppRoutes";
-import { initializeResponsiveVars } from "./utils/responsiveUtils";
+"use client"
+
+import { useEffect } from "react"
+import { AuthProvider } from "./contexts/AuthContext"
+import { ThemeProvider } from "./contexts/ThemeContext"
+import AppRoutes from "./routes/AppRoutes"
+import { initializeResponsiveVars } from "./utils/responsiveUtils"
 
 const App = () => {
   useEffect(() => {
-    const cleanup = initializeResponsiveVars();
-    return cleanup;
-  }, []);
+    const cleanup = initializeResponsiveVars()
+    return cleanup
+  }, [])
 
   return (
     <AuthProvider>
@@ -16,7 +18,7 @@ const App = () => {
         <AppRoutes />
       </ThemeProvider>
     </AuthProvider>
-  );
-};
+  )
+}
 
-export default App;
+export default App
