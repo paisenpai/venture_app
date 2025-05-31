@@ -1,14 +1,24 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 import PageHeader from "../components/ui/PageHeader";
 import SettingsMenu from "../components/quest/settings/SettingsMenu";
 
 const Settings = () => {
   const { theme, toggleTheme } = useTheme();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
 
   // Determine if dark mode is active
   const darkMode = theme === "dark";
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div className="w-full px-4 py-4">
@@ -116,7 +126,7 @@ const Settings = () => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow">
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow mb-6">
           <h2 className="text-xl font-semibold mb-6 text-indigo-800 dark:text-indigo-300">
             Account Settings
           </h2>
@@ -145,6 +155,33 @@ const Settings = () => {
             <div className="flex justify-end mt-4">
               <button className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition">
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Logout Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow mb-6">
+          <h2 className="text-xl font-semibold mb-6 text-red-600 dark:text-red-400">
+            Account Action
+          </h2>
+
+          <div className="space-y-4">
+            <div className="p-4 border border-red-200 dark:border-red-900 rounded-lg bg-red-50 dark:bg-red-900/20">
+              <div className="mb-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-200">
+                  Sign Out
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Log out of your account. You will need to sign in again to
+                  access your quests and progress.
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 transition"
+              >
+                Logout
               </button>
             </div>
           </div>

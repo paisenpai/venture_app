@@ -5,7 +5,6 @@ import AppRoutes from "./routes/AppRoutes";
 import { initializeResponsiveVars } from "./utils/responsiveUtils";
 
 const App = () => {
-  // Initialize responsive CSS variables
   useEffect(() => {
     const cleanup = initializeResponsiveVars();
     return cleanup;
