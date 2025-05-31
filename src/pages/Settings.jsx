@@ -34,9 +34,7 @@ const Settings = () => {
       <div className="mt-8 max-w-3xl mx-auto">
         {/* Settings cards */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow mb-6">
-          <h2 className="text-xl font-semibold mb-6 text-indigo-800 dark:text-indigo-300">
-            Appearance
-          </h2>
+          <h2 className="text-xl font-semibold mb-6 text-indigo-800 dark:text-indigo-300"></h2>
 
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
