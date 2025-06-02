@@ -12,102 +12,78 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing auth on initial load
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setIsAuthenticated(!!session?.user)
-      setLoading(false)
-    })
+    const checkSession = async () => {
+      try {
+        // Get initial session
+        const { data, error } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Session error:", error)
+          setIsAuthenticated(false)
+          setUser(null)
+        } else {
+          console.log("Initial session check:", data)
+          setUser(data.session?.user ?? null)
+          setIsAuthenticated(!!data.session?.user)
+        }
+      } catch (err) {
+        console.error("Session check error:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkSession()
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      setIsAuthenticated(!!session?.user)
-      setLoading(false)
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event, session)
 
-      // Create user profile if it's a new user
-      if (event === "SIGNED_IN" && session?.user) {
-        await createUserProfile(session.user)
+      if (event === "SIGNED_IN") {
+        setUser(session?.user ?? null)
+        setIsAuthenticated(true)
+      } else if (event === "SIGNED_OUT") {
+        setUser(null)
+        setIsAuthenticated(false)
+      } else if (event === "USER_UPDATED") {
+        setUser(session?.user ?? null)
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  // Create user profile and stats when they first sign up
-  const createUserProfile = async (user) => {
-    try {
-      // Check if profile already exists
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .single()
-
-      if (!existingProfile) {
-        // Create profile
-        await supabase.from("profiles").insert({
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || user.email?.split("@")[0] || "New User",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-
-        // Create user stats
-        await supabase.from("user_stats").insert({
-          user_id: user.id,
-          current_xp: 0,
-          level: 1,
-          current_streak: 0,
-          max_streak: 0,
-          tasks_completed: 0,
-          total_xp_gained: 0,
-          last_active_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-        })
-
-        // Create character stats
-        await supabase.from("character_stats").insert({
-          user_id: user.id,
-          strength: 1,
-          intelligence: 1,
-          wisdom: 1,
-          charisma: 1,
-          agility: 1,
-          endurance: 1,
-          available_stat_points: 0,
-          total_stat_points: 6,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-
-        // Create user avatar
-        await supabase.from("user_avatars").insert({
-          user_id: user.id,
-          current_theme: "default",
-          unlocked_themes: ["default"],
-          last_updated: new Date().toISOString(),
-        })
-      }
-    } catch (error) {
-      console.error("Error creating user profile:", error)
-    }
-  }
-
   // Google OAuth login
   const signInWithGoogle = async () => {
     try {
       setLoading(true)
+      console.log("Starting Google OAuth flow...")
+
+      // Get the current URL for the redirect
+      const redirectTo = `${window.location.origin}/auth/callback`
+      console.log("Redirect URL:", redirectTo)
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
         },
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Google OAuth error:", error)
+        throw error
+      }
+
+      console.log("OAuth response:", data)
+
+      // The user will be redirected to Google's OAuth page
       return { success: true }
     } catch (error) {
       console.error("Google sign in error:", error)
@@ -154,6 +130,13 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
+      // Handle demo user logout
+      if (user?.id === "demo-user-123") {
+        setUser(null)
+        setIsAuthenticated(false)
+        return
+      }
+
       const { error } = await supabase.auth.signOut()
       if (error) throw error
     } catch (error) {
@@ -171,11 +154,23 @@ export const AuthProvider = ({ children }) => {
         options: {
           data: {
             full_name: userData.username || userData.email.split("@")[0],
+            username: userData.username,
+            birthdate: userData.birthdate,
           },
         },
       })
 
       if (error) throw error
+
+      // Check if user needs to confirm their email
+      if (data?.user && !data?.session) {
+        return {
+          success: true,
+          data,
+          message: "Please check your email to confirm your account.",
+        }
+      }
+
       return { success: true, data }
     } catch (error) {
       console.error("Registration error:", error)
